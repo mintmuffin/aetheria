@@ -164,6 +164,10 @@ public sealed partial class MainWindow : Window
         {
             ContentFrame.Navigate(pageType);
         }
+        else if (ContentFrame.Content is Pages.RoleplayPage rpPage)
+        {
+            rpPage.RefreshFromNavigation();
+        }
     }
 
     private void TitleBarDice_Click(object sender, RoutedEventArgs e)

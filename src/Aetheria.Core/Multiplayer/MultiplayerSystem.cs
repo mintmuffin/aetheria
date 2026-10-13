@@ -274,7 +274,9 @@ public sealed class MultiplayerHostServer : IAsyncDisposable
     public event Action<string>? OnLogMessage;
     public event Action<RoleplaySession>? OnSessionStateChanged;
     public event Action<SessionMessage>? OnMessageAdded;
+    public event Action<string, string>? OnAiStreamStarted; // (streamId, senderName)
     public event Action<string, string>? OnAiStreamDelta; // (streamId, delta)
+    public event Action<string>? OnAiStreamEnded; // (streamId)
 
     private sealed class ConnectedClientContext
     {
@@ -895,7 +897,11 @@ public sealed class MultiplayerHostServer : IAsyncDisposable
         await BroadcastTurnAndWorldStateAsync(ct);
 
         // Coordinate authoritative AI generation on the Host
-        if (payload.RequestAiResponse && (validation.ShouldTriggerAiCharacter || validation.ShouldTriggerNarrator))
+        // In TwoPersonPrivate (couple / co-op), individual messages do NOT trigger AI on send action;
+        // AI response is only generated when both participants confirm Ready.
+        if (ActiveSession.GameMode != RoleplayGameMode.TwoPersonPrivate &&
+            payload.RequestAiResponse &&
+            (validation.ShouldTriggerAiCharacter || validation.ShouldTriggerNarrator))
         {
             await TriggerAuthoritativeAiGenerationAsync(validation.ShouldTriggerNarrator, isRoundResolution: false, ct: ct);
         }
@@ -924,6 +930,9 @@ public sealed class MultiplayerHostServer : IAsyncDisposable
 
             var senderName = isNarrator ? "Narrator" : primaryChar!.Name;
             var streamId = Guid.NewGuid().ToString("N");
+
+            // Local host event for live token typing in desktop app
+            OnAiStreamStarted?.Invoke(streamId, senderName);
 
             // Notify clients AI stream has begun
             await BroadcastToAllClientsAsync(new MultiplayerPacket
@@ -992,6 +1001,8 @@ public sealed class MultiplayerHostServer : IAsyncDisposable
                 PayloadJson = JsonSerializer.Serialize(aiMsg)
             }, ct);
 
+            OnAiStreamEnded?.Invoke(streamId);
+
             await BroadcastTurnAndWorldStateAsync(ct);
         }
         catch (Exception ex)
@@ -1013,8 +1024,10 @@ public sealed class MultiplayerHostServer : IAsyncDisposable
         }
         await BroadcastParticipantListAsync(ct);
 
-        var roundNum = ActiveSession.TurnNumber;
-        var noticeText = $"🔔 Round #{roundNum} concluded! Resolving actions & narrating consequences for Round #{roundNum + 1}...";
+        var isCouple = ActiveSession.GameMode == RoleplayGameMode.TwoPersonPrivate;
+        var noticeText = isCouple
+            ? "✨ Both partners confirmed ready! Continuing the scene & weaving recent actions..."
+            : "✨ All players confirmed ready! Weaving recent actions & continuing the story...";
         Log(noticeText);
         await BroadcastToAllClientsAsync(new MultiplayerPacket
         {
@@ -1174,7 +1187,9 @@ public sealed class MultiplayerClient : IAsyncDisposable
     public event Action<string>? OnLogMessage;
     public event Action<RoleplaySession>? OnSessionSynced;
     public event Action<SessionMessage>? OnMessageReceived;
+    public event Action<AiStreamPayload>? OnAiStreamStartReceived;
     public event Action<AiStreamPayload>? OnAiStreamChunkReceived;
+    public event Action<string>? OnAiStreamEndReceived;
     public event Action<Character>? OnCharacterSynced;
     public event Action<string>? OnSystemNoticeReceived;
     public event Action<LobbyStatePayload>? OnLobbyStateReceived;
@@ -1359,8 +1374,12 @@ public sealed class MultiplayerClient : IAsyncDisposable
 
                 switch (packet.Type)
                 {
+                    case MultiplayerPacketType.AiStreamStart:
+                        var startPayload = JsonSerializer.Deserialize<AiStreamPayload>(packet.PayloadJson);
+                        if (startPayload != null) OnAiStreamStartReceived?.Invoke(startPayload);
+                        break;
+
                     case MultiplayerPacketType.MessageBroadcast:
-                    case MultiplayerPacketType.AiStreamEnd:
                         var msg = JsonSerializer.Deserialize<SessionMessage>(packet.PayloadJson);
                         if (msg != null && SyncedSession != null)
                         {
@@ -1370,6 +1389,19 @@ public sealed class MultiplayerClient : IAsyncDisposable
                                 OnMessageReceived?.Invoke(msg);
                             }
                         }
+                        break;
+
+                    case MultiplayerPacketType.AiStreamEnd:
+                        var endMsg = JsonSerializer.Deserialize<SessionMessage>(packet.PayloadJson);
+                        if (endMsg != null && SyncedSession != null)
+                        {
+                            if (SyncedSession.Messages.All(m => m.MessageId != endMsg.MessageId))
+                            {
+                                SyncedSession.Messages.Add(endMsg);
+                                OnMessageReceived?.Invoke(endMsg);
+                            }
+                        }
+                        OnAiStreamEndReceived?.Invoke(packet.SessionId);
                         break;
 
                     case MultiplayerPacketType.AiStreamChunk:

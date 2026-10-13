@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Aetheria.App.Helpers;
 using Aetheria.Core.Domain;
 using Aetheria.Core.Formats;
+using Aetheria.Core.Multiplayer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -18,6 +19,8 @@ public sealed partial class RoleplayPage : Page
     private bool _isLoadingSelectors;
     private CancellationTokenSource? _streamCts;
     private TextBlock? _liveStreamTextBlock;
+    private Border? _activeStreamCard;
+    private readonly StringBuilder _streamSb = new();
 
     private List<RoleplaySession> _sessions = new();
     private List<Character> _characters = new();
@@ -42,12 +45,18 @@ public sealed partial class RoleplayPage : Page
         {
             ctx.ActiveHostServer.OnMessageAdded += OnExternalMessageReceived;
             ctx.ActiveHostServer.OnSessionStateChanged += OnExternalSessionStateChanged;
+            ctx.ActiveHostServer.OnAiStreamStarted += OnHostAiStreamStarted;
+            ctx.ActiveHostServer.OnAiStreamDelta += OnHostAiStreamDelta;
+            ctx.ActiveHostServer.OnAiStreamEnded += OnHostAiStreamEnded;
         }
         if (ctx.ActiveClient != null)
         {
             ctx.ActiveClient.OnMessageReceived += OnExternalMessageReceived;
             ctx.ActiveClient.OnSessionSynced += OnExternalSessionStateChanged;
             ctx.ActiveClient.OnSystemNoticeReceived += OnClientNotice;
+            ctx.ActiveClient.OnAiStreamStartReceived += OnClientAiStreamStarted;
+            ctx.ActiveClient.OnAiStreamChunkReceived += OnClientAiStreamChunk;
+            ctx.ActiveClient.OnAiStreamEndReceived += OnClientAiStreamEnded;
         }
 
         LoadTopSelectors();
@@ -69,12 +78,18 @@ public sealed partial class RoleplayPage : Page
         {
             ctx.ActiveHostServer.OnMessageAdded -= OnExternalMessageReceived;
             ctx.ActiveHostServer.OnSessionStateChanged -= OnExternalSessionStateChanged;
+            ctx.ActiveHostServer.OnAiStreamStarted -= OnHostAiStreamStarted;
+            ctx.ActiveHostServer.OnAiStreamDelta -= OnHostAiStreamDelta;
+            ctx.ActiveHostServer.OnAiStreamEnded -= OnHostAiStreamEnded;
         }
         if (ctx.ActiveClient != null)
         {
             ctx.ActiveClient.OnMessageReceived -= OnExternalMessageReceived;
             ctx.ActiveClient.OnSessionSynced -= OnExternalSessionStateChanged;
             ctx.ActiveClient.OnSystemNoticeReceived -= OnClientNotice;
+            ctx.ActiveClient.OnAiStreamStartReceived -= OnClientAiStreamStarted;
+            ctx.ActiveClient.OnAiStreamChunkReceived -= OnClientAiStreamChunk;
+            ctx.ActiveClient.OnAiStreamEndReceived -= OnClientAiStreamEnded;
         }
     }
 
@@ -97,70 +112,269 @@ public sealed partial class RoleplayPage : Page
     private void LoadTopSelectors()
     {
         _isLoadingSelectors = true;
-        var ctx = App.Platform;
-        var active = GetEffectiveSession();
+        try
+        {
+            var ctx = App.Platform;
+            var active = GetEffectiveSession();
 
-        _sessions = ctx.Repository.GetAllSessions();
-        _characters = ctx.Repository.GetAllCharacters();
-        _personas = ctx.Repository.GetAllPersonas();
-        _presets = ctx.Repository.GetAllModelPresets();
+            _sessions = ctx.Repository.GetAllSessions();
+            _characters = ctx.Repository.GetAllCharacters();
+            _personas = ctx.Repository.GetAllPersonas();
+            _presets = ctx.Repository.GetAllModelPresets();
 
-        SessionCombo.Items.Clear();
-        foreach (var s in _sessions)
-        {
-            SessionCombo.Items.Add(new ComboBoxItem { Content = $"{s.Title} ({s.GameMode})", Tag = s.SessionId });
-        }
-        SelectComboByTag(SessionCombo, active.SessionId);
-
-        GameModeCombo.Items.Clear();
-        foreach (var mode in Enum.GetValues<RoleplayGameMode>())
-        {
-            GameModeCombo.Items.Add(new ComboBoxItem { Content = mode.ToString(), Tag = mode.ToString() });
-        }
-        SelectComboByTag(GameModeCombo, active.GameMode.ToString());
-
-        CharacterCombo.Items.Clear();
-        CharacterCombo.Items.Add(new ComboBoxItem { Content = "(None / Human Only)", Tag = "" });
-        foreach (var c in _characters)
-        {
-            CharacterCombo.Items.Add(new ComboBoxItem { Content = c.Name, Tag = c.Id });
-        }
-        SelectComboByTag(CharacterCombo, active.ActiveCharacterIds.FirstOrDefault() ?? "");
-
-        PersonaCombo.Items.Clear();
-        foreach (var p in _personas)
-        {
-            PersonaCombo.Items.Add(new ComboBoxItem { Content = $"[Persona] {p.Name}", Tag = p.Id });
-        }
-        foreach (var c in _characters)
-        {
-            PersonaCombo.Items.Add(new ComboBoxItem { Content = $"[Character] {c.Name}", Tag = c.Id });
-        }
-        if (ctx.ActiveClient?.IsConnected == true)
-        {
-            var myPart = active.Participants.FirstOrDefault(p => p.ParticipantId == ctx.ActiveClient.AssignedParticipantId);
-            if (myPart != null && (!string.IsNullOrWhiteSpace(myPart.CharacterId) || !string.IsNullOrWhiteSpace(myPart.PersonaId)))
+            SessionCombo.Items.Clear();
+            foreach (var s in _sessions)
             {
-                SelectComboByTag(PersonaCombo, myPart.CharacterId ?? myPart.PersonaId);
+                SessionCombo.Items.Add(new ComboBoxItem { Content = $"{s.Title} ({s.GameMode})", Tag = s.SessionId });
+            }
+            SelectComboByTag(SessionCombo, active.SessionId);
+
+            GameModeCombo.Items.Clear();
+            foreach (var mode in Enum.GetValues<RoleplayGameMode>())
+            {
+                GameModeCombo.Items.Add(new ComboBoxItem { Content = mode.ToString(), Tag = mode.ToString() });
+            }
+            SelectComboByTag(GameModeCombo, active.GameMode.ToString());
+
+            CharacterCombo.Items.Clear();
+            CharacterCombo.Items.Add(new ComboBoxItem { Content = "(None / Human Only)", Tag = "" });
+            foreach (var c in _characters)
+            {
+                CharacterCombo.Items.Add(new ComboBoxItem { Content = c.Name, Tag = c.Id });
+            }
+            SelectComboByTag(CharacterCombo, active.ActiveCharacterIds.FirstOrDefault() ?? "");
+
+            PersonaCombo.Items.Clear();
+            foreach (var p in _personas)
+            {
+                PersonaCombo.Items.Add(new ComboBoxItem { Content = $"[Persona] {p.Name}", Tag = p.Id });
+            }
+            foreach (var c in _characters)
+            {
+                PersonaCombo.Items.Add(new ComboBoxItem { Content = $"[Character] {c.Name}", Tag = c.Id });
+            }
+            if (ctx.ActiveClient?.IsConnected == true)
+            {
+                var myPart = active.Participants.FirstOrDefault(p => p.ParticipantId == ctx.ActiveClient.AssignedParticipantId);
+                if (myPart != null && (!string.IsNullOrWhiteSpace(myPart.CharacterId) || !string.IsNullOrWhiteSpace(myPart.PersonaId)))
+                {
+                    SelectComboByTag(PersonaCombo, myPart.CharacterId ?? myPart.PersonaId);
+                }
+                else
+                {
+                    SelectComboByTag(PersonaCombo, active.ActivePersonaId);
+                }
             }
             else
             {
                 SelectComboByTag(PersonaCombo, active.ActivePersonaId);
             }
+
+            ModelPresetCombo.Items.Clear();
+            foreach (var m in _presets)
+            {
+                ModelPresetCombo.Items.Add(new ComboBoxItem { Content = $"{m.Name} [{m.ProviderType}]", Tag = m.Id });
+            }
+            SelectComboByTag(ModelPresetCombo, active.ActiveModelPresetId ?? ctx.GetDefaultModelPreset().Id);
         }
-        else
+        catch (Exception ex)
         {
-            SelectComboByTag(PersonaCombo, active.ActivePersonaId);
+            App.Platform.Log($"LoadTopSelectors exception: {ex.Message}");
+        }
+        finally
+        {
+            _isLoadingSelectors = false;
         }
 
-        ModelPresetCombo.Items.Clear();
-        foreach (var m in _presets)
-        {
-            ModelPresetCombo.Items.Add(new ComboBoxItem { Content = $"{m.Name} [{m.ProviderType}]", Tag = m.Id });
-        }
-        SelectComboByTag(ModelPresetCombo, active.ActiveModelPresetId ?? ctx.GetDefaultModelPreset().Id);
+        PopulateSessionsSidebar();
+    }
 
-        _isLoadingSelectors = false;
+    public void SwitchToSession(string sid)
+    {
+        var found = _sessions.FirstOrDefault(s => s.SessionId == sid);
+        if (found == null) return;
+
+        App.Platform.ActiveSession = found;
+
+        _isLoadingSelectors = true;
+        try
+        {
+            SelectComboByTag(SessionCombo, found.SessionId);
+            SelectComboByTag(GameModeCombo, found.GameMode.ToString());
+            SelectComboByTag(CharacterCombo, found.ActiveCharacterIds.FirstOrDefault() ?? "");
+            SelectComboByTag(PersonaCombo, found.ActivePersonaId);
+            SelectComboByTag(ModelPresetCombo, found.ActiveModelPresetId ?? App.Platform.GetDefaultModelPreset().Id);
+        }
+        catch (Exception ex)
+        {
+            App.Platform.Log($"SwitchToSession note: {ex.Message}");
+        }
+        finally
+        {
+            _isLoadingSelectors = false;
+        }
+
+        RefreshSessionWorkspace();
+        PopulateSessionsSidebar();
+    }
+
+    public void RefreshFromNavigation()
+    {
+        LoadTopSelectors();
+        RefreshSessionWorkspace();
+    }
+
+    private void ToggleSessionsSidebar_Click(object sender, RoutedEventArgs e)
+    {
+        SessionsSidebar.Visibility = SessionsSidebar.Visibility == Visibility.Visible
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+    }
+
+    private void SessionsSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        PopulateSessionsSidebar();
+    }
+
+    public void PopulateSessionsSidebar()
+    {
+        if (!_isLoaded || SessionsListPanel == null) return;
+
+        SessionsListPanel.Children.Clear();
+        var currentSession = GetEffectiveSession();
+        var filter = SessionsSearchBox?.Text?.Trim() ?? string.Empty;
+
+        var matching = _sessions.Where(s =>
+            string.IsNullOrWhiteSpace(filter) ||
+            s.Title.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+            s.GameMode.ToString().Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        foreach (var s in matching)
+        {
+            var isCurrent = s.SessionId == currentSession.SessionId;
+            var cardBorder = new Border
+            {
+                CornerRadius = new CornerRadius(8),
+                BorderThickness = new Thickness(isCurrent ? 2 : 1),
+                BorderBrush = isCurrent
+                    ? (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentFillColorDefaultBrush"]
+                    : (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
+                Background = isCurrent
+                    ? (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ControlFillColorSecondaryBrush"]
+                    : (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorSecondaryBrush"],
+                Padding = new Thickness(10, 8, 10, 8),
+                Margin = new Thickness(0, 0, 0, 4)
+            };
+
+            var grid = new Grid { ColumnSpacing = 6 };
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var info = new StackPanel { Spacing = 2 };
+            var titleBlock = new TextBlock
+            {
+                Text = s.Title,
+                FontWeight = isCurrent ? Microsoft.UI.Text.FontWeights.Bold : Microsoft.UI.Text.FontWeights.SemiBold,
+                FontSize = 13,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxLines = 1
+            };
+            var metaBlock = new TextBlock
+            {
+                Text = $"{s.GameMode} • {s.Messages.Count} msgs • {s.UpdatedAt:MMM dd}",
+                FontSize = 11,
+                Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                TextTrimming = TextTrimming.CharacterEllipsis
+            };
+            info.Children.Add(titleBlock);
+            info.Children.Add(metaBlock);
+            Grid.SetColumn(info, 0);
+
+            var capturedSession = s;
+            cardBorder.PointerPressed += (_, _) => SwitchToSession(capturedSession.SessionId);
+
+            var renameBtn = new Button
+            {
+                Content = "✏️",
+                Padding = new Thickness(6, 2, 6, 2),
+                FontSize = 11
+            };
+            ToolTipService.SetToolTip(renameBtn, "Rename chat");
+            renameBtn.Click += async (_, _) => await RenameSessionDialogAsync(capturedSession);
+            Grid.SetColumn(renameBtn, 1);
+
+            var deleteBtn = new Button
+            {
+                Content = "🗑️",
+                Padding = new Thickness(6, 2, 6, 2),
+                FontSize = 11
+            };
+            ToolTipService.SetToolTip(deleteBtn, "Delete chat");
+            deleteBtn.Click += async (_, _) => await DeleteSessionDialogAsync(capturedSession);
+            Grid.SetColumn(deleteBtn, 2);
+
+            grid.Children.Add(info);
+            grid.Children.Add(renameBtn);
+            grid.Children.Add(deleteBtn);
+
+            cardBorder.Child = grid;
+            SessionsListPanel.Children.Add(cardBorder);
+        }
+    }
+
+    private async Task RenameSessionDialogAsync(RoleplaySession target)
+    {
+        var input = new TextBox { Text = target.Title, SelectionStart = target.Title.Length };
+        var dlg = new ContentDialog
+        {
+            Title = "Rename Chat",
+            Content = input,
+            PrimaryButtonText = "Save",
+            CloseButtonText = "Cancel",
+            XamlRoot = this.XamlRoot
+        };
+        if (await dlg.ShowAsync() == ContentDialogResult.Primary)
+        {
+            var newName = input.Text.Trim();
+            if (!string.IsNullOrWhiteSpace(newName))
+            {
+                target.Title = newName;
+                App.Platform.Repository.SaveSession(target);
+                LoadTopSelectors();
+                RefreshSessionWorkspace();
+            }
+        }
+    }
+
+    private async Task DeleteSessionDialogAsync(RoleplaySession target)
+    {
+        var dlg = new ContentDialog
+        {
+            Title = "Delete Chat",
+            Content = $"Are you sure you want to delete '{target.Title}'? This cannot be undone.",
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+        if (await dlg.ShowAsync() == ContentDialogResult.Primary)
+        {
+            App.Platform.Repository.DeleteSession(target.SessionId);
+            _sessions = App.Platform.Repository.GetAllSessions();
+            if (GetEffectiveSession().SessionId == target.SessionId)
+            {
+                var next = _sessions.FirstOrDefault();
+                if (next == null)
+                {
+                    NewSession_Click(this, new RoutedEventArgs());
+                    return;
+                }
+                App.Platform.ActiveSession = next;
+            }
+            LoadTopSelectors();
+            RefreshSessionWorkspace();
+        }
     }
 
     private static void SelectComboByTag(ComboBox combo, string tag)
@@ -169,11 +383,11 @@ public sealed partial class RoleplayPage : Page
         {
             if (combo.Items[i] is ComboBoxItem item && string.Equals(item.Tag as string, tag, StringComparison.OrdinalIgnoreCase))
             {
-                combo.SelectedIndex = i;
+                if (combo.SelectedIndex != i) combo.SelectedIndex = i;
                 return;
             }
         }
-        if (combo.Items.Count > 0) combo.SelectedIndex = 0;
+        if (combo.Items.Count > 0 && combo.SelectedIndex < 0) combo.SelectedIndex = 0;
     }
 
     private RoleplaySession GetEffectiveSession()
@@ -197,9 +411,12 @@ public sealed partial class RoleplayPage : Page
         var turnHolderId = ctx.Engine.GetCurrentTurnParticipantId(session);
         var turnHolderName = session.Participants.FirstOrDefault(p => p.ParticipantId == turnHolderId)?.DisplayName ?? "Any";
 
-        TurnStatusText.Text = session.GameMode == RoleplayGameMode.TurnBased
-            ? $"Turn #{session.TurnNumber} • Active Turn: {turnHolderName} ({session.CurrentTurnPhase}) • Location: {session.CurrentLocation}"
-            : $"Mode: {session.GameMode} • Location: {session.CurrentLocation}";
+        TurnStatusText.Text = session.GameMode switch
+        {
+            RoleplayGameMode.TwoPersonPrivate => $"Mode: Couple RP (Private) • Location: {session.CurrentLocation}",
+            RoleplayGameMode.TurnBased => $"Turn #{session.TurnNumber} • Active Turn: {turnHolderName} ({session.CurrentTurnPhase}) • Location: {session.CurrentLocation}",
+            _ => $"Mode: {session.GameMode} • Location: {session.CurrentLocation}"
+        };
 
         if (session.Participants.Count > 1)
         {
@@ -234,7 +451,8 @@ public sealed partial class RoleplayPage : Page
         RunningSummaryBox.Text = session.RunningSummary;
 
         int wordCount = session.Messages.Sum(m => m.Content.Split(new[] { ' ', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length);
-        ArchiveStatsText.Text = $"Total Messages: {session.Messages.Count} • Words: {wordCount:N0} • Est. Tokens: {(int)(wordCount * 1.3):N0} • Turn: #{session.TurnNumber}";
+        var turnStat = session.GameMode == RoleplayGameMode.TwoPersonPrivate ? "" : $" • Turn: #{session.TurnNumber}";
+        ArchiveStatsText.Text = $"Total Messages: {session.Messages.Count} • Words: {wordCount:N0} • Est. Tokens: {(int)(wordCount * 1.3):N0}{turnStat}";
 
         // Whisper targets
         WhisperTargetCombo.Items.Clear();
@@ -697,6 +915,13 @@ public sealed partial class RoleplayPage : Page
         ctx.Repository.SaveSession(session);
         RefreshSessionWorkspace();
 
+        if (session.GameMode == RoleplayGameMode.TwoPersonPrivate)
+        {
+            // In TwoPersonPrivate (couple / co-op), individual messages do NOT trigger AI response!
+            // The AI only generates when both players hit the Ready button.
+            return;
+        }
+
         if (validation.ShouldTriggerNarrator)
         {
             await StreamSinglePlayerAiAsync(session, isNarrator: true);
@@ -705,6 +930,101 @@ public sealed partial class RoleplayPage : Page
         {
             await StreamSinglePlayerAiAsync(session, isNarrator: false);
         }
+    }
+
+    private void OnHostAiStreamStarted(string streamId, string senderName)
+    {
+        DispatcherQueue.TryEnqueue(() => StartLiveStreamCard(senderName));
+    }
+
+    private void OnHostAiStreamDelta(string streamId, string delta)
+    {
+        DispatcherQueue.TryEnqueue(() => AppendLiveStreamDelta(delta));
+    }
+
+    private void OnHostAiStreamEnded(string streamId)
+    {
+        DispatcherQueue.TryEnqueue(EndLiveStreamCard);
+    }
+
+    private void OnClientAiStreamStarted(AiStreamPayload payload)
+    {
+        DispatcherQueue.TryEnqueue(() => StartLiveStreamCard(payload.SenderName));
+    }
+
+    private void OnClientAiStreamChunk(AiStreamPayload payload)
+    {
+        DispatcherQueue.TryEnqueue(() => AppendLiveStreamDelta(payload.DeltaOrFullContent));
+    }
+
+    private void OnClientAiStreamEnded(string streamId)
+    {
+        DispatcherQueue.TryEnqueue(EndLiveStreamCard);
+    }
+
+    private void StartLiveStreamCard(string senderName)
+    {
+        if (_activeStreamCard != null) EndLiveStreamCard();
+
+        _streamSb.Clear();
+        SendActionBtn.IsEnabled = false;
+        StopStreamBtn.IsEnabled = true;
+        StreamingStatusText.Text = $"Streaming ({senderName})...";
+
+        _liveStreamTextBlock = new TextBlock
+        {
+            Text = "▋",
+            TextWrapping = TextWrapping.Wrap,
+            FontSize = AccessibilityManager.Current.EffectiveFontSize,
+            LineHeight = AccessibilityManager.Current.GetCalculatedLineHeight(),
+            FontFamily = AccessibilityManager.Current.GetConfiguredFontFamily()
+        };
+
+        _activeStreamCard = new Border
+        {
+            CornerRadius = new CornerRadius(8),
+            BorderThickness = new Thickness(1),
+            BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
+            Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorSecondaryBrush"],
+            Padding = new Thickness(14, 10, 14, 10),
+            Child = new StackPanel
+            {
+                Spacing = 6,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = $"🤖 {senderName} (Typing...)",
+                        FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                        Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"]
+                    },
+                    _liveStreamTextBlock
+                }
+            }
+        };
+
+        MessagesListPanel.Children.Add(_activeStreamCard);
+        TranscriptScroll.ChangeView(null, TranscriptScroll.ScrollableHeight + 500, null);
+    }
+
+    private void AppendLiveStreamDelta(string delta)
+    {
+        if (string.IsNullOrEmpty(delta) || _liveStreamTextBlock == null) return;
+        _streamSb.Append(delta);
+        _liveStreamTextBlock.Text = _streamSb.ToString() + " ▋";
+        TranscriptScroll.ChangeView(null, TranscriptScroll.ScrollableHeight + 500, null);
+    }
+
+    private void EndLiveStreamCard()
+    {
+        if (_activeStreamCard != null)
+        {
+            MessagesListPanel.Children.Remove(_activeStreamCard);
+            _activeStreamCard = null;
+        }
+        SendActionBtn.IsEnabled = true;
+        StopStreamBtn.IsEnabled = false;
+        StreamingStatusText.Text = "Ready";
     }
 
     private async Task StreamSinglePlayerAiAsync(RoleplaySession session, bool isNarrator, SessionMessage? existingSwipeMessage = null, bool isRoundResolution = false)
@@ -725,61 +1045,30 @@ public sealed partial class RoleplayPage : Page
         _streamCts?.Cancel();
         _streamCts = new CancellationTokenSource();
 
-        SendActionBtn.IsEnabled = false;
-        StopStreamBtn.IsEnabled = true;
         var responderName = isNarrator ? "Narrator" : activeChar!.Name;
-        StreamingStatusText.Text = $"Streaming from {preset.ProviderType} ({preset.ModelId})...";
+        StartLiveStreamCard(responderName);
 
-        // Add live streaming card to UI
-        _liveStreamTextBlock = new TextBlock
-        {
-            Text = "▋",
-            TextWrapping = TextWrapping.Wrap,
-            FontSize = 14,
-            LineHeight = 22
-        };
-
-        var streamCard = new Border
-        {
-            CornerRadius = new CornerRadius(8),
-            BorderThickness = new Thickness(1),
-            BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
-            Padding = new Thickness(14, 10, 14, 10),
-            Child = new StackPanel
-            {
-                Spacing = 6,
-                Children =
-                {
-                    new TextBlock { Text = $"{responderName} (Streaming...)", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
-                    _liveStreamTextBlock
-                }
-            }
-        };
-        MessagesListPanel.Children.Add(streamCard);
-        TranscriptScroll.ChangeView(null, TranscriptScroll.ScrollableHeight + 500, null);
-
-        var sb = new StringBuilder();
         try
         {
             await foreach (var delta in ctx.AiOrchestrator.StreamSessionResponseAsync(
                 session, activeChar, persona, world, preset, isNarrator, isRoundResolution, _streamCts.Token))
             {
-                sb.Append(delta);
-                _liveStreamTextBlock.Text = sb.ToString();
-                TranscriptScroll.ChangeView(null, TranscriptScroll.ScrollableHeight + 500, null);
+                AppendLiveStreamDelta(delta);
             }
         }
         catch (OperationCanceledException)
         {
-            sb.Append(" [Stopped]");
+            AppendLiveStreamDelta(" [Stopped]");
         }
         catch (Exception ex)
         {
-            sb.Append($"\n[Generation Error: {ex.Message}]");
+            AppendLiveStreamDelta($"\n[Generation Error: {ex.Message}]");
         }
         finally
         {
-            var finalText = sb.ToString().Trim();
+            var finalText = _streamSb.ToString().Trim();
+            EndLiveStreamCard();
+
             if (!string.IsNullOrWhiteSpace(finalText))
             {
                 if (existingSwipeMessage != null)
@@ -795,9 +1084,6 @@ public sealed partial class RoleplayPage : Page
                 ctx.Repository.SaveSession(session);
             }
 
-            SendActionBtn.IsEnabled = true;
-            StopStreamBtn.IsEnabled = false;
-            StreamingStatusText.Text = "Ready";
             RefreshSessionWorkspace();
         }
     }
@@ -923,15 +1209,16 @@ public sealed partial class RoleplayPage : Page
     private void SessionCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_isLoadingSelectors) return;
-        if (SessionCombo.SelectedItem is ComboBoxItem item && item.Tag is string sid)
+        try
         {
-            var found = _sessions.FirstOrDefault(s => s.SessionId == sid);
-            if (found != null)
+            if (SessionCombo.SelectedItem is ComboBoxItem item && item.Tag is string sid)
             {
-                App.Platform.ActiveSession = found;
-                LoadTopSelectors();
-                RefreshSessionWorkspace();
+                SwitchToSession(sid);
             }
+        }
+        catch (Exception ex)
+        {
+            App.Platform.Log($"Session switch note: {ex.Message}");
         }
     }
 

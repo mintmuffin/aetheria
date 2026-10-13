@@ -10,12 +10,13 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="SessionsSidebarCol" Width="Auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="320"/>
         </Grid.ColumnDefinitions>
 
         <!-- Row 0: Session Controls & Model Switcher Bar -->
-        <Border Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource FluentSurfaceCardStyle}" Padding="14,10">
+        <Border Grid.Row="0" Grid.ColumnSpan="3" Style="{StaticResource FluentSurfaceCardStyle}" Padding="14,10">
             <Grid RowSpacing="10" ColumnSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -52,6 +53,7 @@
                               SelectionChanged="ModelPresetCombo_SelectionChanged"/>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                        <Button Content="☰ Chats" Click="ToggleSessionsSidebar_Click" ToolTipService.ToolTip="Toggle ChatGPT / Character.ai Chats Sidebar"/>
                         <Button Content="+ New Session" Click="NewSession_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Create a new roleplay session"/>
                         <Button Content="Export .rpsession" Click="ExportSession_Click"/>
                     </StackPanel>
@@ -60,7 +62,7 @@
         </Border>
 
         <!-- Row 1: Turn-Based / Mode Coordination Banner -->
-        <Border x:Name="TurnBanner" Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource FluentSurfaceCardStyle}" Padding="14,8">
+        <Border x:Name="TurnBanner" Grid.Row="1" Grid.ColumnSpan="3" Style="{StaticResource FluentSurfaceCardStyle}" Padding="14,8">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -80,7 +82,7 @@
                         <ComboBoxItem Content="🇹🇷 Auto Turkish" Tag="tr"/>
                         <ComboBoxItem Content="🇬🇧 Auto English" Tag="en"/>
                     </ComboBox>
-                    <Button x:Name="ReadyForTurnBtn" Content="✓ Ready (0/2)" Click="ReadyForTurn_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Confirm ready for next round. When all players are ready, AI automatically narrates consequences and starts next round!"/>
+                    <Button x:Name="ReadyForTurnBtn" Content="✓ Ready (0/2)" Click="ReadyForTurn_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Confirm ready for scene continuation. When both players are ready, AI continues the story!"/>
                     <Button x:Name="AdvanceTurnBtn" Content="Next Turn &#xE72A;" Click="AdvanceTurn_Click"/>
                     <Button x:Name="TriggerNarratorBtn" Content="Narrator Phase" Click="TriggerNarrator_Click"/>
                     <Button x:Name="RequestAiReplyBtn" Content="Trigger AI Response" Click="RequestAiReply_Click"/>
@@ -88,8 +90,39 @@
             </Grid>
         </Border>
 
-        <!-- Row 2 Col 0: Main Transcript & Action Composer -->
-        <Grid Grid.Row="2" Grid.Column="0" RowSpacing="12">
+        <!-- Row 2 Col 0: ChatGPT / Character.ai Style Chats Sidebar -->
+        <Border x:Name="SessionsSidebar" Grid.Row="2" Grid.Column="0" Width="280" Style="{StaticResource FluentSurfaceCardStyle}" Padding="12,10" Margin="0,0,4,0">
+            <Grid RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Sidebar Header -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="💬 Chats" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Content="+ New" Click="NewSession_Click" Style="{StaticResource AccentButtonStyle}" FontSize="12" Padding="8,4" Margin="0,0,6,0" ToolTipService.ToolTip="Start new chat/session"/>
+                    <Button Grid.Column="2" Content="«" Click="ToggleSessionsSidebar_Click" FontSize="12" Padding="6,4" ToolTipService.ToolTip="Collapse sidebar"/>
+                </Grid>
+
+                <!-- Search Chats Box -->
+                <TextBox x:Name="SessionsSearchBox" Grid.Row="1" PlaceholderText="Search chats..." TextChanged="SessionsSearchBox_TextChanged"/>
+
+                <!-- Scrollable List of Chats -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="SessionsListPanel" Spacing="6" Padding="0,2,4,4"/>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- Row 2 Col 1: Main Transcript & Action Composer -->
+        <Grid Grid.Row="2" Grid.Column="1" RowSpacing="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -182,8 +215,8 @@
             </Border>
         </Grid>
 
-        <!-- Row 2 Col 1: Right Side Inspector (Tabs: Party, Story Tree, World State, Archive) -->
-        <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource FluentSurfaceCardStyle}" Padding="12">
+        <!-- Row 2 Col 2: Right Side Inspector (Tabs: Party, Story Tree, World State, Archive) -->
+        <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource FluentSurfaceCardStyle}" Padding="12">
             <Grid RowSpacing="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

@@ -211,12 +211,15 @@ public sealed class RoleplayEngine
             // Determine whether AI should respond
             bool triggerAi = session.GameMode switch
             {
-                RoleplayGameMode.TwoPersonPrivate => session.AllowAiInTwoPersonMode && !isPrivateWhisper,
+                // In TwoPersonPrivate (couple / co-op), individual messages do NOT trigger AI.
+                // AI generation is only triggered when both participants confirm Ready for scene continuation!
+                RoleplayGameMode.TwoPersonPrivate => false,
                 RoleplayGameMode.TurnBased => !isPrivateWhisper && IsCurrentTurnAi(session),
                 _ => !isPrivateWhisper && session.ActiveCharacterIds.Count > 0 && participant.CanTriggerAi
             };
 
-            bool triggerNarrator = session.EnableNarratorPhase &&
+            bool triggerNarrator = session.GameMode != RoleplayGameMode.TwoPersonPrivate &&
+                                  session.EnableNarratorPhase &&
                                   actionType is RoleplayActionType.Move or RoleplayActionType.Inspect or RoleplayActionType.Interact;
 
             return ActionValidationResult.Allow(triggerAi, triggerNarrator);

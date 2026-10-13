@@ -65,7 +65,7 @@ if (Test-Path $finalApk) { Remove-Item $finalApk -Force }
 & $ApkSigner sign --ks $keystore --ks-pass pass:android --ks-key-alias androiddebugkey --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --out $finalApk $alignedApk
 
 # Also copy a friendly versioned name
-$versionedApk = Join-Path $DistDir "Aetheria-Roleplay-v1.0.3.apk"
+$versionedApk = Join-Path $DistDir "Aetheria-Roleplay-v1.0.4.apk"
 Copy-Item $finalApk $versionedApk -Force
 
 Write-Host "=== Android APK Successfully Created! ===" -ForegroundColor Green

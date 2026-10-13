@@ -274,9 +274,19 @@ public static class PromptComposer
 
         if (isRoundResolution)
         {
-            result.Add(new ChatMessageTurn(
-                "user",
-                $"[ROUND #{session.TurnNumber} RESOLUTION & CONSEQUENCES{worldReminder}]: Both players ({humanNames}) have confirmed ready and completed their actions for this round.{diceNotice} As the Game Master / Narrator, summarize what just unfolded from their choices, describe the resulting consequences and environmental shift, how they react to one another, and set up Round #{session.TurnNumber + 1}. Write 2-3 vivid paragraphs without speaking or acting on behalf of {humanNames}.]"));
+            if (session.GameMode == RoleplayGameMode.TwoPersonPrivate)
+            {
+                var coupleStyle = "This is an intimate couple roleplay. Evoke the sensory atmosphere, tenderness, emotional chemistry, and subtle consequences of their closeness.";
+                result.Add(new ChatMessageTurn(
+                    "user",
+                    $"[Scene Continuation & Consequences{worldReminder}]: Both partners ({humanNames}) have confirmed their actions and are ready for the scene to advance.{diceNotice} {coupleStyle} As the Game Master / Narrator, summarize and weave together a seamless, natural narrative continuation reflecting what just unfolded from their choices, dialogue, and actions. Describe the evolving atmosphere, sensory details, and how the scene progresses organically. Do NOT count or mention round numbers or turns in your output. Write 2-3 vivid paragraphs without speaking or acting on behalf of {humanNames}.]"));
+            }
+            else
+            {
+                result.Add(new ChatMessageTurn(
+                    "user",
+                    $"[Scene Resolution & Consequences{worldReminder}]: The players ({humanNames}) have completed their actions and are ready to advance.{diceNotice} As the Game Master / Narrator, summarize what just unfolded from their choices, describe the resulting consequences, sensory details, and environmental shifts, and advance the narrative organically. Do NOT enumerate round numbers or mention game turn mechanics in your output. Write 2-3 vivid paragraphs without speaking or acting on behalf of {humanNames}.]"));
+            }
         }
         else if (isNarrator)
         {

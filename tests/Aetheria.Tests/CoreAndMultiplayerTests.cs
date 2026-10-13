@@ -387,11 +387,11 @@ public sealed class CoreAndMultiplayerTests : IDisposable
         Assert.Contains("Narrator Continuation", continuationPrompt[^1].Content);
         Assert.Contains("1d20", continuationPrompt[^1].Content);
 
-        // Test 2: Round Resolution
+        // Test 2: Scene Resolution & Consequences without round counting
         var resolutionPrompt = PromptComposer.BuildPrompt(session, null, hostPersona, null, preset, isNarratorGeneration: true, isRoundResolution: true);
         Assert.NotEmpty(resolutionPrompt);
-        Assert.Contains("ROUND #2 RESOLUTION & CONSEQUENCES", resolutionPrompt[^1].Content);
-        Assert.Contains("Round #3", resolutionPrompt[^1].Content);
+        Assert.Contains("Scene Continuation & Consequences", resolutionPrompt[^1].Content);
+        Assert.DoesNotContain("ROUND #2", resolutionPrompt[^1].Content);
     }
 
     [Fact]

@@ -229,6 +229,15 @@ public sealed class OpenAiCompatibleAdapter : IAiProviderAdapter
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         var baseUrl = (preset.EndpointUrl ?? "https://api.openai.com/v1").Trim().TrimEnd('/');
+        if (string.Equals(preset.ProviderType, "KoboldCpp", StringComparison.OrdinalIgnoreCase) ||
+            baseUrl.Contains(":5001", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!baseUrl.EndsWith("/v1", StringComparison.OrdinalIgnoreCase) &&
+                !baseUrl.Contains("/v1/", StringComparison.OrdinalIgnoreCase))
+            {
+                baseUrl = $"{baseUrl}/v1";
+            }
+        }
         var url = baseUrl.EndsWith("/chat/completions", StringComparison.OrdinalIgnoreCase)
             ? baseUrl
             : $"{baseUrl}/chat/completions";
@@ -343,7 +352,10 @@ public sealed class OpenAiCompatibleAdapter : IAiProviderAdapter
                 try
                 {
                     var node = JsonNode.Parse(dataStr);
-                    deltaText = node?["choices"]?[0]?["delta"]?["content"]?.GetValue<string>();
+                    deltaText = node?["choices"]?[0]?["delta"]?["content"]?.GetValue<string>()
+                             ?? node?["choices"]?[0]?["text"]?.GetValue<string>()
+                             ?? node?["token"]?.GetValue<string>()
+                             ?? node?["delta"]?.GetValue<string>();
                 }
                 catch
                 {
