@@ -305,6 +305,13 @@ public static class SeedDataHelper
                     Region = "Tokyo Outskirts",
                     Description = "High school attended by Asa Mitaka and the sprawling coastal aquarium.",
                     PointsOfInterest = new List<string> { "School Rooftop", "Penguin Hallway", "Coastal Walkway" }
+                },
+                new()
+                {
+                    Name = "Cozy Hideout Apartment (Bedroom AU)",
+                    Region = "Tokyo Outskirts (AU Sanctuary)",
+                    Description = "A warm, sun-drenched sanctuary hideout apartment where Denji and Reze escaped together. Soft queen-size bed with tangled sheets, gentle morning breezes through sheer curtains, no orders, no devils, no fear.",
+                    PointsOfInterest = new List<string> { "Sunlit Queen Bed & Soft Pillows", "Sunlit Balcony with Potted Flowers", "Small Kitchen Stove & Moka Pot", "Wooden Wardrobe (No Uniforms)" }
                 }
             },
             Factions = new List<WorldFaction>
@@ -355,6 +362,13 @@ public static class SeedDataHelper
                     Title = "Power (The Blood Fiend) & Meowy",
                     Keys = new List<string> { "power", "blood", "meowy", "fiend", "horns" },
                     Content = "Power is the loud, boastful Blood Fiend in Division 4 who forms weapons out of her own blood, hates vegetables, loves meat and her cat Meowy, and is Denji's chaotic best friend/partner.",
+                    IsConstant = true
+                },
+                new()
+                {
+                    Title = "Denji & Reze's Peaceful Escape AU",
+                    Keys = new List<string> { "bedroom", "escape", "hideout", "peace", "reze", "denji", "sanctuary", "bed", "morning" },
+                    Content = "In this alternate timeline (AU), Denji and Reze successfully slipped away from Public Safety and Soviet command after the beach and café. They live together in a private, sunlit Tokyo apartment where they can finally be normal young lovers. Reze's neck choker is off; Denji does not have to fight to survive. Their days are filled with lazy mornings in bed, shared laughter, tender intimacy, cooking together, and gentle devotion.",
                     IsConstant = true
                 }
             }

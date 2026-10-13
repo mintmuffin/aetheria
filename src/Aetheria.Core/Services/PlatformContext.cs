@@ -20,6 +20,7 @@ public sealed class PlatformContext : IDisposable
     public SecretVault SecretVault { get; }
     public AiOrchestrator AiOrchestrator { get; }
     public RoleplayEngine Engine { get; }
+    public TranslationService Translation { get; } = new();
 
     public RoleplaySession? ActiveSession { get; set; }
     public MultiplayerHostServer? ActiveHostServer { get; set; }
@@ -117,11 +118,39 @@ public sealed class PlatformContext : IDisposable
             s.EnableNarratorPhase = mode == RoleplayGameMode.CooperativePvE;
             s.CurrentLocation = location;
             s.AuthorsNote = authorsNote;
-            if (!string.IsNullOrWhiteSpace(openingScene) && s.Messages.Count > 0)
+            if (!string.IsNullOrWhiteSpace(openingScene))
             {
-                s.Messages[0].Content = openingScene;
+                if (s.Messages.Count > 0)
+                {
+                    s.Messages[0].Content = openingScene;
+                }
+                else
+                {
+                    s.Messages.Add(new SessionMessage
+                    {
+                        SenderId = $"ai-{chars.FirstOrDefault()?.Id ?? "intro"}",
+                        SenderName = chars.FirstOrDefault()?.Name ?? "Narrator",
+                        Role = "assistant",
+                        Content = openingScene
+                    });
+                }
             }
             Repository.SaveSession(s);
+        }
+
+        // 0. [COUPLE ROLEPLAY - CSM AU] Denji & Reze: Cozy Bedroom AU (Morning After Escape)
+        if (rezeChar != null && csmWorld != null)
+        {
+            SeedScenario(
+                "scenario-csm-reze-bedroom-au",
+                "[Couple RP — CSM AU] Denji & Reze: Cozy Bedroom AU (Morning After Escape)",
+                RoleplayGameMode.TwoPersonPrivate,
+                denjiPersona,
+                csmWorld,
+                new List<Character> { rezeChar },
+                "Cozy Hideout Apartment (Bedroom AU)",
+                "*Warm morning sunlight filters through the sheer white curtains of your quiet hideaway apartment, casting a soft golden glow across the tousled bedsheets. Reze is nestled against your chest, her dark violet hair spilling across the pillow and her arm draped lazily over your waist. Her neck is bare—no choker, no grenade pin, no missions—just the steady, peaceful warmth of her breath against your collarbone. As you wake, her emerald eyes flutter open with a sleepy, breathtakingly tender smile. She snuggles closer, burying her face into your neck and whispering softly in Russian before giggling.* \"Доброе утро, sleepyhead... You had that silly, happy smile in your sleep again. No Makima, no missions, no alarms today... just stay right here in bed with me for a little longer, okay, Denji?\"",
+                "Tender, intimate, peaceful AU romance between Denji and Reze living together after escaping their pasts. Focus on cozy morning comfort, playful teasing, affection, deep emotional warmth, and mutual devotion.");
         }
 
         // 1. [COUPLE ROLEPLAY - CSM] Denji & Reze: Midnight Rain & School Pool Escape

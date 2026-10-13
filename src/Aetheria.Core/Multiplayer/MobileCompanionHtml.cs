@@ -113,6 +113,8 @@ public static class MobileCompanionHtml
             .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 11.5px; color: var(--text-muted); }
             .sender-name { font-weight: 700; color: var(--text); }
             .sender-role { font-size: 10px; margin-left: 4px; padding: 1px 5px; border-radius: 4px; background: rgba(255,255,255,0.08); }
+            .btn-trans { background: rgba(255,255,255,0.08); border: 1px solid var(--card-border); color: var(--text-muted); padding: 1px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; margin-left: auto; }
+            .btn-trans:active { background: var(--primary); color: white; }
             .msg-body { font-size: 14px; line-height: 1.45; word-break: break-word; }
             .typing-bubble {
               align-self: flex-start;
@@ -246,8 +248,11 @@ public static class MobileCompanionHtml
               </div>
             </div>
             <div class="header-actions">
+              <button class="btn-icon" id="btn-ready" title="Ready for Round (Auto-Resolves when both ready)" onclick="toggleMobileReady()">✓</button>
+              <button class="btn-icon" id="btn-autotrans" title="Auto-Translate into Turkish" onclick="toggleAutoTrans()">🌐</button>
+              <button class="btn-icon" title="Accessibility, Text Size &amp; Zoom" onclick="openModal('modal-a11y')">👁️</button>
               <button class="btn-icon" title="Dice Roller" onclick="openModal('modal-dice')">🎲</button>
-              <button class="btn-icon" title="Characters & Identity" onclick="openModal('modal-char')">👤</button>
+              <button class="btn-icon" title="Characters &amp; Identity" onclick="openModal('modal-char')">👤</button>
               <button class="btn-icon" title="World Lore" onclick="openModal('modal-lore')">📖</button>
               <button class="btn-icon" title="Connection Settings" onclick="openModal('modal-conn')">⚙️</button>
             </div>
@@ -275,7 +280,45 @@ public static class MobileCompanionHtml
             </div>
             <div class="input-row">
               <textarea id="msg-input" class="text-box" rows="1" placeholder="Say something as your character..." oninput="autoGrow(this)"></textarea>
+              <button class="btn-icon" style="width:auto; padding:0 10px; border-radius:18px; font-size:11px; font-weight:600;" title="Translate input to Turkish" onclick="translateInputMobile()">🌐 TR</button>
               <button class="btn-send" onclick="submitAction()">➤</button>
+            </div>
+          </div>
+
+          <!-- Accessibility & Zoom Modal -->
+          <div class="modal-overlay" id="modal-a11y">
+            <div class="modal-content">
+              <div class="modal-title"><span>Accessibility &amp; Zoom</span><button class="btn-icon" onclick="closeModal('modal-a11y')">✕</button></div>
+              <div class="form-group">
+                <label class="form-label">Message Text Size</label>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <button class="btn-dice" style="flex:1; padding:8px;" onclick="changeMobileFontSize(-1)">A- Smaller</button>
+                  <span id="a11y-size-lbl" style="font-weight:700; font-size:14px; min-width:48px; text-align:center;">14px</span>
+                  <button class="btn-dice" style="flex:1; padding:8px;" onclick="changeMobileFontSize(1)">A+ Larger</button>
+                </div>
+              </div>
+              <div class="form-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+                <div>
+                  <div style="font-size:13px; font-weight:600;">High Contrast Theme</div>
+                  <div style="font-size:11px; color:var(--text-muted);">Crisp borders &amp; pure black backdrop</div>
+                </div>
+                <input type="checkbox" id="a11y-chk-contrast" style="width:20px; height:20px;" onchange="toggleMobileContrast(this.checked)">
+              </div>
+              <div class="form-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+                <div>
+                  <div style="font-size:13px; font-weight:600;">Dyslexia-Friendly Font</div>
+                  <div style="font-size:11px; color:var(--text-muted);">High-legibility typeface</div>
+                </div>
+                <input type="checkbox" id="a11y-chk-dyslexic" style="width:20px; height:20px;" onchange="toggleMobileDyslexic(this.checked)">
+              </div>
+              <div class="form-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+                <div>
+                  <div style="font-size:13px; font-weight:600;">Expanded Line Spacing</div>
+                  <div style="font-size:11px; color:var(--text-muted);">Relaxed reading line height (1.85x)</div>
+                </div>
+                <input type="checkbox" id="a11y-chk-spacing" style="width:20px; height:20px;" onchange="toggleMobileSpacing(this.checked)">
+              </div>
+              <button class="btn-primary" style="margin-top:12px;" onclick="closeModal('modal-a11y')">Done</button>
             </div>
           </div>
 
@@ -425,6 +468,89 @@ public static class MobileCompanionHtml
               }
             }
 
+            let autoTranslateTr = false;
+            let isMobileReady = false;
+
+            function toggleAutoTrans() {
+              autoTranslateTr = !autoTranslateTr;
+              const btn = document.getElementById('btn-autotrans');
+              if (autoTranslateTr) {
+                btn.classList.add('badge-live');
+                btn.style.color = 'var(--success)';
+              } else {
+                btn.classList.remove('badge-live');
+                btn.style.color = '';
+              }
+              document.querySelectorAll('.msg-card').forEach(card => {
+                const btn = card.querySelector('.btn-trans');
+                if (btn && autoTranslateTr) translateMsg(btn);
+              });
+            }
+
+            async function toggleMobileReady() {
+              isMobileReady = !isMobileReady;
+              const btn = document.getElementById('btn-ready');
+              if (isMobileReady) {
+                btn.style.background = 'var(--success)';
+                btn.style.color = 'white';
+              } else {
+                btn.style.background = '';
+                btn.style.color = '';
+              }
+              const token = document.getElementById('cfg-token').value.trim();
+              try {
+                await fetch('/api/lobby/ready', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    inviteToken: token,
+                    participantId: participantId,
+                    isReady: isMobileReady
+                  })
+                });
+              } catch(e) {}
+            }
+
+            async function translateInputMobile() {
+              const input = document.getElementById('msg-input');
+              const text = input.value.trim();
+              if (!text) return;
+              try {
+                const res = await fetch('/api/translate?text=' + encodeURIComponent(text) + '&target=tr');
+                if (res.ok) {
+                  const data = await res.json();
+                  input.value = data.translated;
+                }
+              } catch(e) {}
+            }
+
+            async function translateMsg(btn) {
+              const card = btn.closest('.msg-card');
+              const body = card.querySelector('.msg-body');
+              const transBox = card.querySelector('.msg-trans');
+              if (!body || !transBox) return;
+
+              if (transBox.style.display !== 'none' && !autoTranslateTr) {
+                transBox.style.display = 'none';
+                return;
+              }
+
+              btn.textContent = '...';
+              try {
+                const res = await fetch('/api/translate?text=' + encodeURIComponent(body.textContent) + '&target=tr');
+                if (res.ok) {
+                  const data = await res.json();
+                  transBox.textContent = '🇹🇷 ' + data.translated;
+                  transBox.style.display = 'block';
+                  btn.textContent = '✓ TR';
+                } else {
+                  btn.textContent = '🌐 TR';
+                }
+              } catch(e) {
+                btn.textContent = '🌐 TR';
+              }
+            }
+
             function appendMessage(msg) {
               const container = document.getElementById('chat-container');
               const div = document.createElement('div');
@@ -436,9 +562,29 @@ public static class MobileCompanionHtml
               div.className = cls;
 
               const roleLabel = msg.Role === 'narrator' ? 'Narrator' : (msg.ActionType || 'Speech');
-              div.innerHTML = '<div class="msg-header"><span class="sender-name">' + escapeHtml(msg.SenderName) + '</span><span class="sender-role">' + roleLabel + '</span></div><div class="msg-body">' + escapeHtml(msg.Content) + '</div>';
+              div.innerHTML = '<div class="msg-header">' +
+                '<span class="sender-name">' + escapeHtml(msg.SenderName) + '</span>' +
+                '<span class="sender-role">' + roleLabel + '</span>' +
+                '<button class="btn-trans" onclick="translateMsg(this)">🌐 TR</button>' +
+                '</div>' +
+                '<div class="msg-body">' + escapeHtml(msg.Content) + '</div>' +
+                '<div class="msg-trans" style="display:none; margin-top:6px; padding:6px 8px; border-radius:6px; background:rgba(255,255,255,0.06); font-size:13px; font-style:italic; color:#FCD34D;"></div>';
+
+              const sz = parseInt(localStorage.getItem('a11y_size') || '14', 10);
+              const spacing = localStorage.getItem('a11y_spacing') === 'true';
+              const bodyEl = div.querySelector('.msg-body');
+              if (bodyEl) {
+                bodyEl.style.fontSize = sz + 'px';
+                bodyEl.style.lineHeight = spacing ? '1.85' : '1.45';
+              }
+
               container.appendChild(div);
               container.scrollTop = container.scrollHeight;
+
+              if (autoTranslateTr) {
+                const transBtn = div.querySelector('.btn-trans');
+                if (transBtn) translateMsg(transBtn);
+              }
             }
 
             function escapeHtml(text) {
@@ -580,12 +726,73 @@ public static class MobileCompanionHtml
               fetchSession();
             }
 
+            function changeMobileFontSize(delta) {
+              let sz = parseInt(localStorage.getItem('a11y_size') || '14', 10);
+              sz = Math.max(11, Math.min(26, sz + delta));
+              localStorage.setItem('a11y_size', sz);
+              applyMobileA11y();
+            }
+
+            function toggleMobileContrast(val) {
+              localStorage.setItem('a11y_contrast', val ? 'true' : 'false');
+              applyMobileA11y();
+            }
+
+            function toggleMobileDyslexic(val) {
+              localStorage.setItem('a11y_dyslexic', val ? 'true' : 'false');
+              applyMobileA11y();
+            }
+
+            function toggleMobileSpacing(val) {
+              localStorage.setItem('a11y_spacing', val ? 'true' : 'false');
+              applyMobileA11y();
+            }
+
+            function applyMobileA11y() {
+              const sz = parseInt(localStorage.getItem('a11y_size') || '14', 10);
+              const lbl = document.getElementById('a11y-size-lbl');
+              if (lbl) lbl.textContent = sz + 'px';
+
+              const contrast = localStorage.getItem('a11y_contrast') === 'true';
+              const dyslexic = localStorage.getItem('a11y_dyslexic') === 'true';
+              const spacing = localStorage.getItem('a11y_spacing') === 'true';
+
+              const chkC = document.getElementById('a11y-chk-contrast');
+              if (chkC) chkC.checked = contrast;
+              const chkD = document.getElementById('a11y-chk-dyslexic');
+              if (chkD) chkD.checked = dyslexic;
+              const chkS = document.getElementById('a11y-chk-spacing');
+              if (chkS) chkS.checked = spacing;
+
+              document.querySelectorAll('.msg-body').forEach(b => {
+                b.style.fontSize = sz + 'px';
+                b.style.lineHeight = spacing ? '1.85' : '1.45';
+              });
+
+              if (dyslexic) {
+                document.body.style.fontFamily = "'Comic Sans MS', sans-serif";
+              } else {
+                document.body.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+              }
+
+              if (contrast) {
+                document.documentElement.style.setProperty('--bg', '#000000');
+                document.documentElement.style.setProperty('--card', '#0a0a0a');
+                document.documentElement.style.setProperty('--card-border', '#38bdf8');
+              } else {
+                document.documentElement.style.setProperty('--bg', '#0E0D14');
+                document.documentElement.style.setProperty('--card', '#171622');
+                document.documentElement.style.setProperty('--card-border', '#282637');
+              }
+            }
+
             window.addEventListener('DOMContentLoaded', () => {
               const savedToken = localStorage.getItem('aetheria_token');
               if (savedToken) document.getElementById('cfg-token').value = savedToken;
               const savedPlayer = localStorage.getItem('aetheria_player');
               if (savedPlayer) document.getElementById('cfg-player').value = savedPlayer;
 
+              applyMobileA11y();
               fetchSession();
               setupEventStream();
             });

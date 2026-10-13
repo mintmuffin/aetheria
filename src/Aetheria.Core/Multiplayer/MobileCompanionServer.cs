@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Aetheria.Core.Domain;
+using Aetheria.Core.Services;
 
 namespace Aetheria.Core.Multiplayer;
 
@@ -19,6 +20,10 @@ public sealed class MobileCompanionServer : IAsyncDisposable
     private TcpListener? _httpListener;
     private CancellationTokenSource? _cts;
     private readonly ConcurrentDictionary<string, SseClientContext> _sseClients = new();
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
 
     public int ListeningPort { get; private set; }
     public bool IsRunning { get; private set; }
@@ -278,6 +283,35 @@ public sealed class MobileCompanionServer : IAsyncDisposable
                 return;
             }
 
+            if (method == "GET" && rawPath == "/api/translate")
+            {
+                string text = "";
+                string target = "tr";
+                string source = "auto";
+                if (path.Contains('?'))
+                {
+                    var q = path.Substring(path.IndexOf('?') + 1);
+                    foreach (var part in q.Split('&'))
+                    {
+                        var kv = part.Split('=');
+                        if (kv.Length == 2)
+                        {
+                            var k = Uri.UnescapeDataString(kv[0].Replace("+", "%20"));
+                            var v = Uri.UnescapeDataString(kv[1].Replace("+", "%20"));
+                            if (k.Equals("text", StringComparison.OrdinalIgnoreCase)) text = v;
+                            else if (k.Equals("target", StringComparison.OrdinalIgnoreCase)) target = v;
+                            else if (k.Equals("source", StringComparison.OrdinalIgnoreCase)) source = v;
+                        }
+                    }
+                }
+
+                var translationService = PlatformContext.Current?.Translation ?? new TranslationService();
+                var translated = await translationService.TranslateAsync(text, target, source, ct);
+                var transResp = JsonSerializer.Serialize(new { original = text, translated, target, source }, JsonOptions);
+                await SendHttpResponseAsync(stream, 200, "OK", "application/json; charset=utf-8", transResp);
+                return;
+            }
+
             if (method == "GET" && rawPath == "/api/stream")
             {
                 // Upgrade to Server-Sent Events (SSE)
@@ -434,6 +468,41 @@ public sealed class MobileCompanionServer : IAsyncDisposable
                     ct: ct);
 
                 var resp = JsonSerializer.Serialize(new { status = "updated", participantId = p.ParticipantId, personaName });
+                await SendHttpResponseAsync(stream, 200, "OK", "application/json; charset=utf-8", resp);
+                return;
+            }
+
+            if (method == "POST" && rawPath == "/api/lobby/ready")
+            {
+                string body = ExtractBody(requestHeader, headerBuffer, read, stream);
+                var doc = JsonDocument.Parse(body);
+                var root = doc.RootElement;
+
+                var token = root.TryGetProperty("inviteToken", out var tProp) ? tProp.GetString() ?? "" : "";
+                if (!string.Equals(token.Trim(), _host.InviteToken.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    var err = JsonSerializer.Serialize(new { error = "Invalid invite token." });
+                    await SendHttpResponseAsync(stream, 401, "Unauthorized", "application/json; charset=utf-8", err);
+                    return;
+                }
+
+                var participantId = root.TryGetProperty("participantId", out var pidProp) ? pidProp.GetString() ?? "" : "";
+                var isReady = root.TryGetProperty("isReady", out var rProp) && rProp.GetBoolean();
+                var p = _host.ActiveSession.Participants.FirstOrDefault(x => x.ParticipantId == participantId);
+                if (p != null)
+                {
+                    await _host.UpdateParticipantIdentityAsync(p.ParticipantId, p.PersonaName, p.DisplayName, isReady: isReady, ct: ct);
+                }
+
+                var resp = JsonSerializer.Serialize(new { status = "updated", participantId, isReady });
+                await SendHttpResponseAsync(stream, 200, "OK", "application/json; charset=utf-8", resp);
+                return;
+            }
+
+            if (method == "POST" && rawPath == "/api/round/resolve")
+            {
+                await _host.ResolveRoundAndNarrateConsequencesAsync(ct);
+                var resp = JsonSerializer.Serialize(new { status = "resolving", round = _host.ActiveSession.TurnNumber });
                 await SendHttpResponseAsync(stream, 200, "OK", "application/json; charset=utf-8", resp);
                 return;
             }

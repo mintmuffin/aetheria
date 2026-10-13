@@ -17,9 +17,11 @@ public static class PromptComposer
         Persona activePersona,
         World? world,
         ModelPreset preset,
-        bool isNarratorGeneration = false)
+        bool isNarratorGeneration = false,
+        bool isRoundResolution = false)
     {
-        var charName = isNarratorGeneration
+        bool isNarrator = isNarratorGeneration || activeCharacter == null;
+        var charName = isNarrator
             ? "Narrator"
             : (activeCharacter?.Name ?? "Companion");
         var userName = activePersona.Name;
@@ -27,10 +29,18 @@ public static class PromptComposer
         var sys = new StringBuilder();
 
         // 1. Core Role & Game Mode Directive
-        if (isNarratorGeneration)
+        if (isNarrator)
         {
-            sys.AppendLine("You are the impartial, atmospheric Game Master and Narrator for this roleplay session.");
-            sys.AppendLine("Describe environmental changes, sensory details, consequences of player actions, and world progression vividly without speaking on behalf of human players.");
+            sys.AppendLine("You are the evocative, atmospheric Game Master and Narrator for this roleplay session.");
+            sys.AppendLine("Your role is to collect the players' actions, dialogue, choices, and dice rolls, and craft a rich, immersive continuation.");
+            if (session.GameMode == RoleplayGameMode.TwoPersonPrivate)
+            {
+                sys.AppendLine("This is an intimate Two-Person couple roleplay. Deepen their emotional connection, cozy bedroom atmosphere, sensory details, and romantic chemistry without speaking or acting on behalf of human players.");
+            }
+            else
+            {
+                sys.AppendLine("Describe environmental changes, sensory details, consequences of player actions, and world progression vividly without speaking on behalf of human players.");
+            }
         }
         else if (activeCharacter != null)
         {
@@ -253,11 +263,30 @@ public static class PromptComposer
         var worldReminder = world != null ? $" in the world of '{world.Name}' (Current Location: {session.CurrentLocation})" : $" at {session.CurrentLocation}";
         var humanNames = string.Join(" and ", session.Participants.Where(p => !p.IsAiCharacter).Select(p => p.PersonaName).DefaultIfEmpty(userName).Distinct());
 
-        if (isNarratorGeneration)
+        // Extract any recent dice rolls from visible history to weave into consequences
+        var recentDiceMessages = session.Messages.TakeLast(8)
+            .Where(m => m.Content.Contains("🎲"))
+            .Select(m => m.Content.Trim())
+            .ToList();
+        var diceNotice = recentDiceMessages.Count > 0
+            ? $" Take into account recent tabletop dice rolls: {string.Join(" | ", recentDiceMessages)}."
+            : string.Empty;
+
+        if (isRoundResolution)
         {
             result.Add(new ChatMessageTurn(
                 "user",
-                $"[Narrator Phase{worldReminder}: Describe the evolving scene, atmosphere, world lore details, and immediate consequences of {humanNames}'s actions vividly in 2-3 detailed paragraphs. Never speak or act on behalf of {humanNames}.]"));
+                $"[ROUND #{session.TurnNumber} RESOLUTION & CONSEQUENCES{worldReminder}]: Both players ({humanNames}) have confirmed ready and completed their actions for this round.{diceNotice} As the Game Master / Narrator, summarize what just unfolded from their choices, describe the resulting consequences and environmental shift, how they react to one another, and set up Round #{session.TurnNumber + 1}. Write 2-3 vivid paragraphs without speaking or acting on behalf of {humanNames}.]"));
+        }
+        else if (isNarrator)
+        {
+            var coupleStyle = session.GameMode == RoleplayGameMode.TwoPersonPrivate
+                ? "This is an intimate couple roleplay. Evoke the sensory atmosphere, tenderness, emotional undercurrents, and subtle consequences of their closeness."
+                : "Describe environmental shifts, sensory details, and immediate consequences of their actions vividly.";
+
+            result.Add(new ChatMessageTurn(
+                "user",
+                $"[Narrator Continuation{worldReminder}]: Act as the atmospheric Game Master and Narrator for {humanNames}.{diceNotice} {coupleStyle} Describe the evolving scene and consequences in 2-3 engaging paragraphs. Never speak or act on behalf of {humanNames}.]"));
         }
         else if (result.Count == 0 || result[^1].Role != "user")
         {

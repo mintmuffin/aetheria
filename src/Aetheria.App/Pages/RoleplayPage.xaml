@@ -64,6 +64,12 @@
                               Checked="TwoPersonAiToggle_Changed" Unchecked="TwoPersonAiToggle_Changed"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <ComboBox x:Name="TranslateModeCombo" ToolTipService.ToolTip="Translation Mode" SelectionChanged="TranslateModeCombo_SelectionChanged" Width="140">
+                        <ComboBoxItem Content="🌐 Trans: Off" Tag="off" IsSelected="True"/>
+                        <ComboBoxItem Content="🇹🇷 Auto Turkish" Tag="tr"/>
+                        <ComboBoxItem Content="🇬🇧 Auto English" Tag="en"/>
+                    </ComboBox>
+                    <Button x:Name="ReadyForTurnBtn" Content="✓ Ready (0/2)" Click="ReadyForTurn_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Confirm ready for next round. When all players are ready, AI automatically narrates consequences and starts next round!"/>
                     <Button x:Name="AdvanceTurnBtn" Content="Next Turn &#xE72A;" Click="AdvanceTurn_Click"/>
                     <Button x:Name="TriggerNarratorBtn" Content="Narrator Phase" Click="TriggerNarrator_Click"/>
                     <Button x:Name="RequestAiReplyBtn" Content="Trigger AI Response" Click="RequestAiReply_Click"/>
@@ -91,6 +97,7 @@
                     <!-- Quick Action Chips & Quick Tabletop Dice -->
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <Button Content="🎲 Roll d20" Padding="8,3" FontSize="11" Click="QuickRollD20_Click"/>
+                        <Button Content="🌐 Translate Box (TR)" Padding="8,3" FontSize="11" Click="TranslateInputBox_Click" ToolTipService.ToolTip="Translate whatever you typed to Turkish before sending"/>
                         <Button Content="💬 Speak" Padding="8,3" FontSize="11" Click="QuickActionChip_Click" Tag="Speak"/>
                         <Button Content="⚔️ Act" Padding="8,3" FontSize="11" Click="QuickActionChip_Click" Tag="Act"/>
                         <Button Content="💭 Think" Padding="8,3" FontSize="11" Click="QuickActionChip_Click" Tag="Think"/>

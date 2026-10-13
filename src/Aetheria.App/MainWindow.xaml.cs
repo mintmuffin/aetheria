@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Aetheria.App.Helpers;
 using Aetheria.App.Pages;
 using Microsoft.UI;
 using Microsoft.UI.Composition.SystemBackdrops;
@@ -47,6 +48,12 @@ public sealed partial class MainWindow : Window
         }
 
         ConfigureWindowSize();
+
+        AccessibilityManager.Current.AccessibilitySettingsChanged += () =>
+        {
+            ApplyZoom(AccessibilityManager.Current.ZoomFactor, notify: false);
+        };
+        ApplyZoom(AccessibilityManager.Current.ZoomFactor, notify: false);
     }
 
     public void InitializeDefaultNavigation()
@@ -161,5 +168,46 @@ public sealed partial class MainWindow : Window
             var roll = Random.Shared.Next(1, sides + 1);
             ShowNotification("🎲 Tabletop Die Rolled", $"Result: Rolled d{sides} -> Total: {roll}", InfoBarSeverity.Informational);
         }
+    }
+
+    private void ZoomIn_Click(object sender, RoutedEventArgs e)
+    {
+        SetZoom(AccessibilityManager.Current.ZoomFactor + 0.1);
+    }
+
+    private void ZoomOut_Click(object sender, RoutedEventArgs e)
+    {
+        SetZoom(AccessibilityManager.Current.ZoomFactor - 0.1);
+    }
+
+    private void ZoomReset_Click(object sender, RoutedEventArgs e)
+    {
+        SetZoom(1.0);
+    }
+
+    public void SetZoom(double factor, bool notify = true)
+    {
+        AccessibilityManager.Current.SetZoomFactor(factor, notify: false);
+        ApplyZoom(AccessibilityManager.Current.ZoomFactor, notify);
+    }
+
+    public void ApplyZoom(double factor, bool notify = true)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (ContentScaleTransform != null)
+            {
+                ContentScaleTransform.ScaleX = factor;
+                ContentScaleTransform.ScaleY = factor;
+            }
+            if (ZoomLabelText != null)
+            {
+                ZoomLabelText.Text = $"{(int)Math.Round(factor * 100)}%";
+            }
+            if (notify)
+            {
+                ShowNotification("Zoom Updated", $"Interface display zoom set to {(int)Math.Round(factor * 100)}%", InfoBarSeverity.Informational);
+            }
+        });
     }
 }

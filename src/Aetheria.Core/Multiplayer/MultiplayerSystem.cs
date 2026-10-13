@@ -788,6 +788,21 @@ public sealed class MultiplayerHostServer : IAsyncDisposable
         await BroadcastLobbyStateAsync(gameStarted: false, ct);
         OnSessionStateChanged?.Invoke(ActiveSession);
         _mobileCompanionServer?.BroadcastSessionState(ActiveSession);
+
+        // Auto-resolve round if all active human participants confirm Ready
+        var activeHumans = ActiveSession.Participants.Where(x => !x.IsAiCharacter && x.IsConnected).ToList();
+        if (activeHumans.Count >= 2 && activeHumans.All(x => x.IsReady))
+        {
+            _ = Task.Run(async () => await ResolveRoundAndNarrateConsequencesAsync(ct));
+        }
+    }
+
+    public async Task ToggleParticipantReadyAsync(string participantId, CancellationToken ct = default)
+    {
+        var p = ActiveSession.Participants.FirstOrDefault(x => x.ParticipantId == participantId);
+        if (p == null) return;
+        var newReady = !p.IsReady;
+        await UpdateParticipantIdentityAsync(p.ParticipantId, p.PersonaName, p.DisplayName, isReady: newReady, ct: ct);
     }
 
     public async Task BroadcastLobbyStateAsync(bool gameStarted = false, CancellationToken ct = default)
@@ -882,11 +897,11 @@ public sealed class MultiplayerHostServer : IAsyncDisposable
         // Coordinate authoritative AI generation on the Host
         if (payload.RequestAiResponse && (validation.ShouldTriggerAiCharacter || validation.ShouldTriggerNarrator))
         {
-            await TriggerAuthoritativeAiGenerationAsync(validation.ShouldTriggerNarrator, ct);
+            await TriggerAuthoritativeAiGenerationAsync(validation.ShouldTriggerNarrator, isRoundResolution: false, ct: ct);
         }
     }
 
-    public async Task TriggerAuthoritativeAiGenerationAsync(bool isNarrator, CancellationToken ct = default)
+    public async Task TriggerAuthoritativeAiGenerationAsync(bool isNarrator, bool isRoundResolution = false, CancellationToken ct = default)
     {
         if (!await _aiGenerationLock.WaitAsync(0, ct))
         {
@@ -901,7 +916,11 @@ public sealed class MultiplayerHostServer : IAsyncDisposable
                     string.Equals(p.PersonaName, c.Name, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(p.CharacterId, c.Id, StringComparison.OrdinalIgnoreCase))))
                 ?? ActiveCharacters.FirstOrDefault();
-            if (!isNarrator && primaryChar == null) return;
+
+            if (primaryChar == null || isRoundResolution)
+            {
+                isNarrator = true;
+            }
 
             var senderName = isNarrator ? "Narrator" : primaryChar!.Name;
             var streamId = Guid.NewGuid().ToString("N");
@@ -927,6 +946,7 @@ public sealed class MultiplayerHostServer : IAsyncDisposable
                 ActiveWorld,
                 ActiveModelPreset,
                 isNarrator,
+                isRoundResolution,
                 ct))
             {
                 fullText.Append(delta);
@@ -974,10 +994,41 @@ public sealed class MultiplayerHostServer : IAsyncDisposable
 
             await BroadcastTurnAndWorldStateAsync(ct);
         }
+        catch (Exception ex)
+        {
+            Log($"AI generation encountered an issue: {ex.Message}");
+        }
         finally
         {
             _aiGenerationLock.Release();
         }
+    }
+
+    public async Task ResolveRoundAndNarrateConsequencesAsync(CancellationToken ct = default)
+    {
+        var activeHumans = ActiveSession.Participants.Where(p => !p.IsAiCharacter && p.IsConnected).ToList();
+        foreach (var h in activeHumans)
+        {
+            h.IsReady = false;
+        }
+        await BroadcastParticipantListAsync(ct);
+
+        var roundNum = ActiveSession.TurnNumber;
+        var noticeText = $"🔔 Round #{roundNum} concluded! Resolving actions & narrating consequences for Round #{roundNum + 1}...";
+        Log(noticeText);
+        await BroadcastToAllClientsAsync(new MultiplayerPacket
+        {
+            Type = MultiplayerPacketType.SystemNotice,
+            SessionId = ActiveSession.SessionId,
+            PayloadJson = noticeText
+        }, ct);
+
+        await TriggerAuthoritativeAiGenerationAsync(isNarrator: true, isRoundResolution: true, ct: ct);
+
+        ActiveSession.TurnNumber++;
+        await BroadcastTurnAndWorldStateAsync(ct);
+        _mobileCompanionServer?.BroadcastSessionState(ActiveSession);
+        OnSessionStateChanged?.Invoke(ActiveSession);
     }
 
     private void StartLanDiscoveryResponder(CancellationToken ct)
@@ -1258,6 +1309,15 @@ public sealed class MultiplayerClient : IAsyncDisposable
             PayloadJson = JsonSerializer.Serialize(payload)
         }, _writeLock, ct);
         Log($"Sent identity update as '{personaName}' [Ready: {isReady}].");
+    }
+
+    public async Task ToggleReadyAsync(CancellationToken ct = default)
+    {
+        if (SyncedSession == null || AssignedParticipantId == null) return;
+        var myParticipant = SyncedSession.Participants.FirstOrDefault(p => p.ParticipantId == AssignedParticipantId);
+        var personaName = myParticipant?.PersonaName ?? "Client";
+        bool newReady = !(myParticipant?.IsReady ?? false);
+        await UpdateIdentityAsync(personaName, isReady: newReady, ct: ct);
     }
 
     public async Task SendActionAsync(

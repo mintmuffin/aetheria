@@ -31,6 +31,119 @@
                 </StackPanel>
             </Border>
 
+            <!-- Accessibility, Zoom, Typography & Ergonomics Center -->
+            <Border Style="{StaticResource CardPanelStyle}">
+                <StackPanel Spacing="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Accessibility, Zoom &amp; Visual Ergonomics" Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+                            <TextBlock Text="Configure display scaling, roleplay reading fonts, dyslexia accommodations, and contrast settings."
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Reset Accessibility Defaults" Click="ResetAccessibility_Click" />
+                    </Grid>
+
+                    <!-- Row 1: UI Zoom Scale -->
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="260" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="4" VerticalAlignment="Center">
+                            <TextBlock Text="Interface Display Zoom / Scale" FontWeight="SemiBold" />
+                            <TextBlock Text="Scales all visual controls and workspaces smoothly. Shortcut: Ctrl+Plus, Ctrl+Minus, Ctrl+0."
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" x:Name="ZoomScaleCombo" HorizontalAlignment="Stretch" SelectionChanged="ZoomScaleCombo_SelectionChanged">
+                            <ComboBoxItem Content="80% (Compact)" Tag="80" />
+                            <ComboBoxItem Content="90% (Small)" Tag="90" />
+                            <ComboBoxItem Content="100% (Default - Standard)" Tag="100" />
+                            <ComboBoxItem Content="110% (Comfortable)" Tag="110" />
+                            <ComboBoxItem Content="125% (Large Display)" Tag="125" />
+                            <ComboBoxItem Content="150% (High-DPI / Accessible)" Tag="150" />
+                            <ComboBoxItem Content="175% (Extra Large)" Tag="175" />
+                            <ComboBoxItem Content="200% (Maximum Scale)" Tag="200" />
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Row 2: Roleplay Message Font Size -->
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="260" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="4" VerticalAlignment="Center">
+                            <TextBlock Text="Roleplay Message Font Size" FontWeight="SemiBold" />
+                            <TextBlock Text="Adjusts text size for character dialogue, descriptions, and story cards."
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" x:Name="FontSizeCombo" HorizontalAlignment="Stretch" SelectionChanged="FontSizeCombo_SelectionChanged">
+                            <ComboBoxItem Content="12px (Small &amp; Compact)" Tag="12" />
+                            <ComboBoxItem Content="14px (Default Standard)" Tag="14" />
+                            <ComboBoxItem Content="16px (Medium Comfort)" Tag="16" />
+                            <ComboBoxItem Content="18px (Large Accessible)" Tag="18" />
+                            <ComboBoxItem Content="22px (Extra Large)" Tag="22" />
+                            <ComboBoxItem Content="26px (Maximum Visibility)" Tag="26" />
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Row 3: Font Family / Dyslexia -->
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="260" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="4" VerticalAlignment="Center">
+                            <TextBlock Text="Typography &amp; Dyslexia-Friendly Font" FontWeight="SemiBold" />
+                            <TextBlock Text="Choose between clean Windows Fluent typography, high-legibility sans-serif, or dyslexia-friendly spacing."
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" x:Name="FontFamilyCombo" HorizontalAlignment="Stretch" SelectionChanged="FontFamilyCombo_SelectionChanged">
+                            <ComboBoxItem Content="Default Fluent (Segoe UI Variable)" Tag="Default" />
+                            <ComboBoxItem Content="Dyslexia-Friendly (Comic Sans / Open)" Tag="Dyslexic" />
+                            <ComboBoxItem Content="Clean Sans-Serif (Arial / Segoe)" Tag="SansSerif" />
+                            <ComboBoxItem Content="Monospaced / Typewriter (Consolas)" Tag="Monospace" />
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Toggles: Line Spacing, High Contrast, Reduce Motion, TTS -->
+                    <Grid ColumnSpacing="16" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <ToggleSwitch Grid.Row="0" Grid.Column="0" x:Name="ExpandedLineSpacingToggle"
+                                      Header="Expanded Line Spacing"
+                                      OffContent="Standard Line Height" OnContent="Relaxed (1.85x) Line Height"
+                                      Toggled="ExpandedLineSpacing_Toggled" />
+
+                        <ToggleSwitch Grid.Row="0" Grid.Column="1" x:Name="HighContrastCardsToggle"
+                                      Header="High-Contrast Message Borders"
+                                      OffContent="Subtle Border" OnContent="High-Contrast Accent Borders"
+                                      Toggled="HighContrastCards_Toggled" />
+
+                        <ToggleSwitch Grid.Row="1" Grid.Column="0" x:Name="ReduceMotionToggle"
+                                      Header="Reduce Motion &amp; Transitions"
+                                      OffContent="Smooth Animations" OnContent="Instant Page &amp; Message Rendering"
+                                      Toggled="ReduceMotion_Toggled" />
+
+                        <ToggleSwitch Grid.Row="1" Grid.Column="1" x:Name="EnableTtsToggle"
+                                      Header="Speech Narration (TTS Aloud)"
+                                      OffContent="Silent Reading" OnContent="Enable '🔊 Listen' On Messages"
+                                      Toggled="EnableTts_Toggled" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
             <!-- Hardware Tuning Advisor (Xeon E5-2690 v3 + RX 580 8GB) -->
             <Border Style="{StaticResource CardPanelStyle}">
                 <StackPanel Spacing="10">

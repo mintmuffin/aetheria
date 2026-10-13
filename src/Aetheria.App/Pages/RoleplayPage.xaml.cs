@@ -23,6 +23,7 @@ public sealed partial class RoleplayPage : Page
     private List<Character> _characters = new();
     private List<Persona> _personas = new();
     private List<ModelPreset> _presets = new();
+    private bool _isLoaded;
 
     public RoleplayPage()
     {
@@ -33,6 +34,7 @@ public sealed partial class RoleplayPage : Page
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
+        _isLoaded = true;
         var ctx = App.Platform;
         ctx.EnsureActiveSessionLoaded();
 
@@ -50,10 +52,18 @@ public sealed partial class RoleplayPage : Page
 
         LoadTopSelectors();
         RefreshSessionWorkspace();
+        AccessibilityManager.Current.AccessibilitySettingsChanged += OnAccessibilityChanged;
+    }
+
+    private void OnAccessibilityChanged()
+    {
+        DispatcherQueue.TryEnqueue(RefreshSessionWorkspace);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
+        _isLoaded = false;
+        AccessibilityManager.Current.AccessibilitySettingsChanged -= OnAccessibilityChanged;
         var ctx = App.Platform;
         if (ctx.ActiveHostServer != null)
         {
@@ -179,6 +189,7 @@ public sealed partial class RoleplayPage : Page
 
     private void RefreshSessionWorkspace()
     {
+        if (!_isLoaded) return;
         var ctx = App.Platform;
         var session = GetEffectiveSession();
 
@@ -213,6 +224,10 @@ public sealed partial class RoleplayPage : Page
         AdvanceTurnBtn.Visibility = session.GameMode == RoleplayGameMode.TurnBased
             ? Visibility.Visible
             : Visibility.Collapsed;
+
+        var activeHumans = session.Participants.Where(p => !p.IsAiCharacter && (p.IsHost || p.IsConnected)).ToList();
+        var readyHumans = activeHumans.Count(p => p.IsReady);
+        ReadyForTurnBtn.Content = $"✓ Ready ({readyHumans}/{Math.Max(1, activeHumans.Count)})";
 
         LocationBox.Text = session.CurrentLocation;
         AuthorsNoteBox.Text = session.AuthorsNote;
@@ -351,11 +366,18 @@ public sealed partial class RoleplayPage : Page
 
     private UIElement CreateMessageCard(RoleplaySession session, SessionMessage msg)
     {
+        var acc = AccessibilityManager.Current;
         var card = new Border
         {
             CornerRadius = new CornerRadius(8),
-            BorderThickness = new Thickness(1),
-            BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
+            BorderThickness = acc.HighContrastCards ? new Thickness(2) : new Thickness(1),
+            BorderBrush = acc.HighContrastCards
+                ? (msg.Role == "assistant"
+                    ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.DeepSkyBlue)
+                    : (msg.Role == "system" || msg.Role == "narrator"
+                        ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Gold)
+                        : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.MediumPurple)))
+                : (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
             Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
             Padding = new Thickness(14, 10, 14, 10)
         };
@@ -375,7 +397,8 @@ public sealed partial class RoleplayPage : Page
         {
             Text = $"{msg.SenderName}{roleBadge} • {msg.Timestamp.ToLocalTime():HH:mm}",
             FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-            FontSize = 13
+            FontSize = Math.Max(12, acc.RoleplayFontSize - 1),
+            FontFamily = acc.GetConfiguredFontFamily()
         };
         header.Children.Add(titleText);
 
@@ -418,6 +441,21 @@ public sealed partial class RoleplayPage : Page
             actionsRow.Children.Add(nextBtn);
         }
 
+        if (acc.EnableTtsNarration && !string.IsNullOrWhiteSpace(msg.Content))
+        {
+            var ttsBtn = new Button { Content = "🔊", Padding = new Thickness(8, 2, 8, 2), FontSize = 12 };
+            ToolTipService.SetToolTip(ttsBtn, "Read aloud (Text-to-Speech)");
+            ttsBtn.Click += async (_, _) =>
+            {
+                await acc.SpeakTextAsync(msg.Content);
+            };
+            actionsRow.Children.Add(ttsBtn);
+        }
+
+        var transBtn = new Button { Content = "🌐 TR", Padding = new Thickness(8, 2, 8, 2), FontSize = 12 };
+        ToolTipService.SetToolTip(transBtn, "Translate to Turkish");
+        actionsRow.Children.Add(transBtn);
+
         var editBtn = new Button { Content = "Edit", Padding = new Thickness(8, 2, 8, 2), FontSize = 12 };
         editBtn.Click += async (_, _) => await EditMessageDialogAsync(session, msg);
         actionsRow.Children.Add(editBtn);
@@ -441,10 +479,70 @@ public sealed partial class RoleplayPage : Page
             Text = msg.Content,
             TextWrapping = TextWrapping.Wrap,
             IsTextSelectionEnabled = true,
-            FontSize = 14,
-            LineHeight = 22
+            FontSize = acc.RoleplayFontSize,
+            FontFamily = acc.GetConfiguredFontFamily(),
+            LineHeight = acc.GetCalculatedLineHeight()
         };
         stack.Children.Add(bodyText);
+
+        // Translation Card
+        var transCard = new Border
+        {
+            CornerRadius = new CornerRadius(6),
+            Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ControlFillColorSecondaryBrush"],
+            Padding = new Thickness(10, 6, 10, 6),
+            Margin = new Thickness(0, 4, 0, 0),
+            Visibility = Visibility.Collapsed
+        };
+        var transText = new TextBlock
+        {
+            Text = "",
+            FontStyle = Windows.UI.Text.FontStyle.Italic,
+            FontSize = 13,
+            TextWrapping = TextWrapping.Wrap,
+            IsTextSelectionEnabled = true
+        };
+        transCard.Child = transText;
+        stack.Children.Add(transCard);
+
+        async Task PerformTranslationAsync(string targetLang)
+        {
+            try
+            {
+                transBtn.IsEnabled = false;
+                var res = await App.Platform.Translation.TranslateAsync(msg.Content, targetLang);
+                var langLabel = targetLang == "tr" ? "🇹🇷 Turkish" : (targetLang == "en" ? "🇬🇧 English" : targetLang);
+                transText.Text = $"🌐 [{langLabel}]: {res}";
+                transCard.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                transText.Text = $"🌐 [Translation error]: {ex.Message}";
+                transCard.Visibility = Visibility.Visible;
+            }
+            finally
+            {
+                transBtn.IsEnabled = true;
+            }
+        }
+
+        transBtn.Click += async (_, _) =>
+        {
+            if (transCard.Visibility == Visibility.Visible && string.IsNullOrWhiteSpace(_autoTranslateTargetLanguage))
+            {
+                transCard.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                var target = _autoTranslateTargetLanguage ?? "tr";
+                await PerformTranslationAsync(target);
+            }
+        };
+
+        if (!string.IsNullOrWhiteSpace(_autoTranslateTargetLanguage))
+        {
+            _ = PerformTranslationAsync(_autoTranslateTargetLanguage);
+        }
 
         card.Child = stack;
         return card;
@@ -550,15 +648,14 @@ public sealed partial class RoleplayPage : Page
         }
     }
 
-    private async Task StreamSinglePlayerAiAsync(RoleplaySession session, bool isNarrator, SessionMessage? existingSwipeMessage = null)
+    private async Task StreamSinglePlayerAiAsync(RoleplaySession session, bool isNarrator, SessionMessage? existingSwipeMessage = null, bool isRoundResolution = false)
     {
         var ctx = App.Platform;
         var activeCharId = session.ActiveCharacterIds.FirstOrDefault();
-        var activeChar = _characters.FirstOrDefault(c => c.Id == activeCharId) ?? _characters.FirstOrDefault();
-        if (!isNarrator && activeChar == null)
+        var activeChar = _characters.FirstOrDefault(c => c.Id == activeCharId);
+        if (activeChar == null || isRoundResolution)
         {
-            App.MainWindowInstance.ShowNotification("No AI Character Selected", "Select an active AI character or enable Narrator Phase.", InfoBarSeverity.Informational);
-            return;
+            isNarrator = true;
         }
 
         var persona = _personas.FirstOrDefault(p => p.Id == session.ActivePersonaId) ?? ctx.GetDefaultPersona();
@@ -606,7 +703,7 @@ public sealed partial class RoleplayPage : Page
         try
         {
             await foreach (var delta in ctx.AiOrchestrator.StreamSessionResponseAsync(
-                session, activeChar, persona, world, preset, isNarrator, _streamCts.Token))
+                session, activeChar, persona, world, preset, isNarrator, isRoundResolution, _streamCts.Token))
             {
                 sb.Append(delta);
                 _liveStreamTextBlock.Text = sb.ToString();
@@ -685,12 +782,14 @@ public sealed partial class RoleplayPage : Page
     private async void RequestAiReply_Click(object sender, RoutedEventArgs e)
     {
         var ctx = App.Platform;
+        var session = GetEffectiveSession();
+        bool useNarrator = session.ActiveCharacterIds.Count == 0;
         if (ctx.ActiveHostServer?.IsRunning == true)
         {
-            await ctx.ActiveHostServer.TriggerAuthoritativeAiGenerationAsync(isNarrator: false);
+            await ctx.ActiveHostServer.TriggerAuthoritativeAiGenerationAsync(isNarrator: useNarrator);
             return;
         }
-        await StreamSinglePlayerAiAsync(GetEffectiveSession(), isNarrator: false);
+        await StreamSinglePlayerAiAsync(session, isNarrator: useNarrator);
     }
 
     private void AdvanceTurn_Click(object sender, RoutedEventArgs e)
@@ -699,6 +798,67 @@ public sealed partial class RoleplayPage : Page
         App.Platform.Engine.AdvanceTurn(session);
         App.Platform.Repository.SaveSession(session);
         RefreshSessionWorkspace();
+    }
+
+    private string? _autoTranslateTargetLanguage = null;
+
+    private void TranslateModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_isLoaded) return;
+        if (TranslateModeCombo?.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+        {
+            _autoTranslateTargetLanguage = tag == "off" ? null : tag;
+            RefreshSessionWorkspace();
+        }
+    }
+
+    private async void TranslateInputBox_Click(object sender, RoutedEventArgs e)
+    {
+        var text = MessageInputBox.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(text)) return;
+        try
+        {
+            var translated = await App.Platform.Translation.TranslateAsync(text, "tr");
+            MessageInputBox.Text = translated;
+            App.MainWindowInstance.ShowNotification("Translated to Turkish 🇹🇷", translated, InfoBarSeverity.Informational);
+        }
+        catch (Exception ex)
+        {
+            App.MainWindowInstance.ShowNotification("Translation Error", ex.Message, InfoBarSeverity.Warning);
+        }
+    }
+
+    private async void ReadyForTurn_Click(object sender, RoutedEventArgs e)
+    {
+        var ctx = App.Platform;
+        if (ctx.ActiveHostServer?.IsRunning == true)
+        {
+            var hostParticipant = ctx.ActiveHostServer.ActiveSession.Participants.FirstOrDefault(p => p.IsHost);
+            if (hostParticipant != null)
+            {
+                await ctx.ActiveHostServer.ToggleParticipantReadyAsync(hostParticipant.ParticipantId);
+                var activeHumans = ctx.ActiveHostServer.ActiveSession.Participants.Where(x => !x.IsAiCharacter && x.IsConnected).ToList();
+                if (activeHumans.Count <= 1)
+                {
+                    // Solo host mode: directly resolve round & narrate consequences
+                    await ctx.ActiveHostServer.ResolveRoundAndNarrateConsequencesAsync();
+                }
+            }
+            return;
+        }
+
+        if (ctx.ActiveClient?.IsConnected == true)
+        {
+            await ctx.ActiveClient.ToggleReadyAsync();
+            return;
+        }
+
+        // Single player offline mode: advance turn & trigger round resolution continuation
+        var session = GetEffectiveSession();
+        ctx.Engine.AdvanceTurn(session);
+        ctx.Repository.SaveSession(session);
+        RefreshSessionWorkspace();
+        await StreamSinglePlayerAiAsync(session, isNarrator: true, isRoundResolution: true);
     }
 
     private void SessionCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)

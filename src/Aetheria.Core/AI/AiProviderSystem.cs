@@ -566,11 +566,12 @@ public sealed class AiOrchestrator
         World? world,
         ModelPreset preset,
         bool isNarrator = false,
+        bool isRoundResolution = false,
         CancellationToken ct = default)
     {
         var adapter = GetAdapter(preset.ProviderType);
         var apiKey = ResolveApiKey(preset);
-        var promptMessages = PromptComposer.BuildPrompt(session, activeCharacter, activePersona, world, preset, isNarrator);
+        var promptMessages = PromptComposer.BuildPrompt(session, activeCharacter, activePersona, world, preset, isNarrator, isRoundResolution);
         return adapter.StreamCompletionAsync(preset, apiKey, promptMessages, ct);
     }
 }

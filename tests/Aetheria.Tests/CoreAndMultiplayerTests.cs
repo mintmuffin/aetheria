@@ -323,6 +323,96 @@ public sealed class CoreAndMultiplayerTests : IDisposable
         var syncResp = await http.PostAsync("/api/sync-character", new System.Net.Http.StringContent(syncCharJson, Encoding.UTF8, "application/json"));
         Assert.True(syncResp.IsSuccessStatusCode);
         Assert.Contains(hostServer.ActiveCharacters, c => c.Name == "Mobile Devil Hunter");
+
+        // 7. GET /api/translate translates text into Turkish
+        var transResp = await http.GetAsync("/api/translate?text=Good+morning+my+love&target=tr");
+        Assert.True(transResp.IsSuccessStatusCode);
+        var transJson = await transResp.Content.ReadAsStringAsync();
+        Assert.Contains("Günaydın", transJson, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void BedroomAU_ScenarioAndLore_AreProperlySeeded()
+    {
+        var repo = new SqliteRepository(_tempDir);
+        SeedDataHelper.SeedCsmAndDeathNote(repo);
+
+        var csmWorld = repo.GetAllWorlds().FirstOrDefault(w => w.Id == "world-chainsaw-man");
+        Assert.NotNull(csmWorld);
+        Assert.Contains(csmWorld!.Locations, loc => loc.Name.Contains("Bedroom AU"));
+        Assert.Contains(csmWorld.LoreEntries, lore => lore.Title.Contains("Peaceful Escape AU"));
+
+        using var ctx = new Aetheria.Core.Services.PlatformContext(_tempDir);
+        var sessions = repo.GetAllSessions();
+        var bedroomScenario = sessions.FirstOrDefault(s => s.SessionId == "scenario-csm-reze-bedroom-au");
+        Assert.NotNull(bedroomScenario);
+        Assert.Equal(RoleplayGameMode.TwoPersonPrivate, bedroomScenario!.GameMode);
+        Assert.True(bedroomScenario.AllowAiInTwoPersonMode);
+        Assert.Contains("bedroom", bedroomScenario.CurrentLocation, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("sleepyhead", bedroomScenario.Messages[0].Content, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task TranslationService_TranslatesEnglishToTurkish()
+    {
+        var service = new Aetheria.Core.Services.TranslationService();
+        var translated = await service.TranslateAsync("Good morning my love", targetLanguage: "tr");
+        Assert.NotNull(translated);
+        Assert.Contains("günaydın", translated, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void PromptComposer_NarratorContinuation_AndRoundResolution_WorkWithoutActiveAiCharacter()
+    {
+        var session = new RoleplaySession
+        {
+            GameMode = RoleplayGameMode.TwoPersonPrivate,
+            CurrentLocation = "Cozy Hideout Apartment (Bedroom AU)",
+            TurnNumber = 2
+        };
+        var p1 = new SessionParticipant { ParticipantId = "p1", PersonaName = "Denji", IsConnected = true };
+        var p2 = new SessionParticipant { ParticipantId = "p2", PersonaName = "Reze", IsConnected = true };
+        session.Participants.Add(p1);
+        session.Participants.Add(p2);
+
+        session.Messages.Add(new SessionMessage { SenderName = "Denji", Content = "🎲 [Denji] rolled 1d20: Result 18 (Success)" });
+        session.Messages.Add(new SessionMessage { SenderName = "Reze", Content = "*Reze giggles and hugs Denji tighter.* \"I love lazy mornings with you.\"" });
+
+        var preset = new ModelPreset { ProviderType = "KoboldCpp", ContextLength = 8192, MaxOutputTokens = 700 };
+        var hostPersona = new Persona { Name = "Denji" };
+
+        // Test 1: Narrator Continuation (activeCharacter is null)
+        var continuationPrompt = PromptComposer.BuildPrompt(session, null, hostPersona, null, preset, isNarratorGeneration: true);
+        Assert.NotEmpty(continuationPrompt);
+        Assert.Contains("Narrator Continuation", continuationPrompt[^1].Content);
+        Assert.Contains("1d20", continuationPrompt[^1].Content);
+
+        // Test 2: Round Resolution
+        var resolutionPrompt = PromptComposer.BuildPrompt(session, null, hostPersona, null, preset, isNarratorGeneration: true, isRoundResolution: true);
+        Assert.NotEmpty(resolutionPrompt);
+        Assert.Contains("ROUND #2 RESOLUTION & CONSEQUENCES", resolutionPrompt[^1].Content);
+        Assert.Contains("Round #3", resolutionPrompt[^1].Content);
+    }
+
+    [Fact]
+    public void Accessibility_Settings_ArePersistedAndRetrievedCorrectly()
+    {
+        var repo = new SqliteRepository(_tempDir);
+        repo.SetSetting("UiZoomPercent", "125");
+        repo.SetSetting("RoleplayFontSize", "18");
+        repo.SetSetting("RoleplayFontFamily", "Dyslexic");
+        repo.SetSetting("ExpandedLineSpacing", "true");
+        repo.SetSetting("HighContrastCards", "true");
+        repo.SetSetting("ReduceMotion", "true");
+        repo.SetSetting("EnableTtsNarration", "true");
+
+        Assert.Equal("125", repo.GetSetting("UiZoomPercent"));
+        Assert.Equal("18", repo.GetSetting("RoleplayFontSize"));
+        Assert.Equal("Dyslexic", repo.GetSetting("RoleplayFontFamily"));
+        Assert.Equal("true", repo.GetSetting("ExpandedLineSpacing"));
+        Assert.Equal("true", repo.GetSetting("HighContrastCards"));
+        Assert.Equal("true", repo.GetSetting("ReduceMotion"));
+        Assert.Equal("true", repo.GetSetting("EnableTtsNarration"));
     }
 
     private static int GetAvailableTcpPort()
