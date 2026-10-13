@@ -541,6 +541,10 @@ public static class MobileCompanionHtml
                 if (res.ok) {
                   const data = await res.json();
                   transBox.textContent = '🇹🇷 ' + data.translated;
+                  const sz = parseInt(localStorage.getItem('a11y_size') || '14', 10);
+                  const spacing = localStorage.getItem('a11y_spacing') === 'true';
+                  transBox.style.fontSize = sz + 'px';
+                  transBox.style.lineHeight = spacing ? '1.85' : '1.45';
                   transBox.style.display = 'block';
                   btn.textContent = '✓ TR';
                 } else {
@@ -568,14 +572,19 @@ public static class MobileCompanionHtml
                 '<button class="btn-trans" onclick="translateMsg(this)">🌐 TR</button>' +
                 '</div>' +
                 '<div class="msg-body">' + escapeHtml(msg.Content) + '</div>' +
-                '<div class="msg-trans" style="display:none; margin-top:6px; padding:6px 8px; border-radius:6px; background:rgba(255,255,255,0.06); font-size:13px; font-style:italic; color:#FCD34D;"></div>';
+                '<div class="msg-trans" style="display:none; margin-top:6px; padding:8px 10px; border-radius:6px; background:rgba(255,255,255,0.06); font-style:italic; color:#FCD34D;"></div>';
 
               const sz = parseInt(localStorage.getItem('a11y_size') || '14', 10);
               const spacing = localStorage.getItem('a11y_spacing') === 'true';
               const bodyEl = div.querySelector('.msg-body');
+              const transEl = div.querySelector('.msg-trans');
               if (bodyEl) {
                 bodyEl.style.fontSize = sz + 'px';
                 bodyEl.style.lineHeight = spacing ? '1.85' : '1.45';
+              }
+              if (transEl) {
+                transEl.style.fontSize = sz + 'px';
+                transEl.style.lineHeight = spacing ? '1.85' : '1.45';
               }
 
               container.appendChild(div);
@@ -764,10 +773,15 @@ public static class MobileCompanionHtml
               const chkS = document.getElementById('a11y-chk-spacing');
               if (chkS) chkS.checked = spacing;
 
-              document.querySelectorAll('.msg-body').forEach(b => {
+              document.querySelectorAll('.msg-body, .msg-trans').forEach(b => {
                 b.style.fontSize = sz + 'px';
                 b.style.lineHeight = spacing ? '1.85' : '1.45';
               });
+
+              const txtInput = document.getElementById('txt-input');
+              if (txtInput) {
+                txtInput.style.fontSize = sz + 'px';
+              }
 
               if (dyslexic) {
                 document.body.style.fontFamily = "'Comic Sans MS', sans-serif";

@@ -354,6 +354,14 @@ public sealed partial class RoleplayPage : Page
             }
         }
 
+        // Apply accessibility font to MessageInputBox
+        var acc = AccessibilityManager.Current;
+        if (MessageInputBox != null)
+        {
+            MessageInputBox.FontSize = acc.RoleplayFontSize;
+            MessageInputBox.FontFamily = acc.GetConfiguredFontFamily();
+        }
+
         // Render Transcript Messages
         MessagesListPanel.Children.Clear();
         foreach (var msg in session.Messages)
@@ -490,19 +498,59 @@ public sealed partial class RoleplayPage : Page
         {
             CornerRadius = new CornerRadius(6),
             Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ControlFillColorSecondaryBrush"],
-            Padding = new Thickness(10, 6, 10, 6),
-            Margin = new Thickness(0, 4, 0, 0),
+            Padding = new Thickness(10, 8, 10, 8),
+            Margin = new Thickness(0, 6, 0, 0),
+            BorderThickness = acc.HighContrastCards ? new Thickness(1.5) : new Thickness(1),
+            BorderBrush = acc.HighContrastCards
+                ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.DeepSkyBlue)
+                : (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
             Visibility = Visibility.Collapsed
         };
+
+        var transStack = new StackPanel { Spacing = 4 };
+        var transHeader = new Grid();
+        transHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        transHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var transBadge = new TextBlock
+        {
+            Text = "🌐 Translation",
+            FontSize = Math.Max(11, acc.RoleplayFontSize - 2),
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        Grid.SetColumn(transBadge, 0);
+        transHeader.Children.Add(transBadge);
+
+        Button? transTtsBtn = null;
+        if (acc.EnableTtsNarration)
+        {
+            transTtsBtn = new Button
+            {
+                Content = "🔊",
+                Padding = new Thickness(6, 1, 6, 1),
+                FontSize = 11,
+                Visibility = Visibility.Collapsed
+            };
+            ToolTipService.SetToolTip(transTtsBtn, "Read translation aloud (Text-to-Speech)");
+            Grid.SetColumn(transTtsBtn, 1);
+            transHeader.Children.Add(transTtsBtn);
+        }
+        transStack.Children.Add(transHeader);
+
         var transText = new TextBlock
         {
             Text = "",
             FontStyle = Windows.UI.Text.FontStyle.Italic,
-            FontSize = 13,
+            FontSize = acc.RoleplayFontSize,
+            FontFamily = acc.GetConfiguredFontFamily(),
+            LineHeight = acc.GetCalculatedLineHeight(),
             TextWrapping = TextWrapping.Wrap,
             IsTextSelectionEnabled = true
         };
-        transCard.Child = transText;
+        transStack.Children.Add(transText);
+        transCard.Child = transStack;
         stack.Children.Add(transCard);
 
         async Task PerformTranslationAsync(string targetLang)
@@ -512,12 +560,22 @@ public sealed partial class RoleplayPage : Page
                 transBtn.IsEnabled = false;
                 var res = await App.Platform.Translation.TranslateAsync(msg.Content, targetLang);
                 var langLabel = targetLang == "tr" ? "🇹🇷 Turkish" : (targetLang == "en" ? "🇬🇧 English" : targetLang);
-                transText.Text = $"🌐 [{langLabel}]: {res}";
+                transBadge.Text = $"🌐 [{langLabel}]";
+                transText.Text = res;
+                if (transTtsBtn != null)
+                {
+                    transTtsBtn.Visibility = Visibility.Visible;
+                    transTtsBtn.Click += async (_, _) =>
+                    {
+                        await acc.SpeakTextAsync(res);
+                    };
+                }
                 transCard.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
-                transText.Text = $"🌐 [Translation error]: {ex.Message}";
+                transBadge.Text = "🌐 [Translation Error]";
+                transText.Text = ex.Message;
                 transCard.Visibility = Visibility.Visible;
             }
             finally

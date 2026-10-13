@@ -16,36 +16,38 @@
 
         <!-- Row 0: Session Controls & Model Switcher Bar -->
         <Border Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource FluentSurfaceCardStyle}" Padding="14,10">
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="220"/>
-                    <ColumnDefinition Width="165"/>
-                    <ColumnDefinition Width="180"/>
-                    <ColumnDefinition Width="165"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalScrollMode="Auto" VerticalScrollMode="Disabled">
+                <Grid ColumnSpacing="12" MinWidth="760">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.2*" MinWidth="130"/>
+                        <ColumnDefinition Width="*" MinWidth="110"/>
+                        <ColumnDefinition Width="1.1*" MinWidth="120"/>
+                        <ColumnDefinition Width="*" MinWidth="110"/>
+                        <ColumnDefinition Width="1.3*" MinWidth="130"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <ComboBox x:Name="SessionCombo" Grid.Column="0" Header="Active Session" HorizontalAlignment="Stretch"
-                          SelectionChanged="SessionCombo_SelectionChanged"/>
+                    <ComboBox x:Name="SessionCombo" Grid.Column="0" Header="Active Session" HorizontalAlignment="Stretch"
+                              SelectionChanged="SessionCombo_SelectionChanged"/>
 
-                <ComboBox x:Name="GameModeCombo" Grid.Column="1" Header="Game Mode" HorizontalAlignment="Stretch"
-                          SelectionChanged="GameModeCombo_SelectionChanged"/>
+                    <ComboBox x:Name="GameModeCombo" Grid.Column="1" Header="Game Mode" HorizontalAlignment="Stretch"
+                              SelectionChanged="GameModeCombo_SelectionChanged"/>
 
-                <ComboBox x:Name="CharacterCombo" Grid.Column="2" Header="Active Character" HorizontalAlignment="Stretch"
-                          SelectionChanged="CharacterCombo_SelectionChanged"/>
+                    <ComboBox x:Name="CharacterCombo" Grid.Column="2" Header="Active Character" HorizontalAlignment="Stretch"
+                              SelectionChanged="CharacterCombo_SelectionChanged"/>
 
-                <ComboBox x:Name="PersonaCombo" Grid.Column="3" Header="Player Persona" HorizontalAlignment="Stretch"
-                          SelectionChanged="PersonaCombo_SelectionChanged"/>
+                    <ComboBox x:Name="PersonaCombo" Grid.Column="3" Header="Player Persona" HorizontalAlignment="Stretch"
+                              SelectionChanged="PersonaCombo_SelectionChanged"/>
 
-                <ComboBox x:Name="ModelPresetCombo" Grid.Column="4" Header="AI Model Preset (Live Switchable)" HorizontalAlignment="Stretch"
-                          SelectionChanged="ModelPresetCombo_SelectionChanged"/>
+                    <ComboBox x:Name="ModelPresetCombo" Grid.Column="4" Header="AI Model Preset (Live Switchable)" HorizontalAlignment="Stretch"
+                              SelectionChanged="ModelPresetCombo_SelectionChanged"/>
 
-                <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
-                    <Button Content="+ New" Click="NewSession_Click" ToolTipService.ToolTip="Create a new roleplay session"/>
-                    <Button Content="Export .rpsession" Click="ExportSession_Click"/>
-                </StackPanel>
-            </Grid>
+                    <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                        <Button Content="+ New" Click="NewSession_Click" ToolTipService.ToolTip="Create a new roleplay session"/>
+                        <Button Content="Export .rpsession" Click="ExportSession_Click"/>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
         </Border>
 
         <!-- Row 1: Turn-Based / Mode Coordination Banner -->
@@ -63,17 +65,19 @@
                     <CheckBox x:Name="TwoPersonAiToggle" Content="Enable AI in Two-Person Private Mode" Visibility="Collapsed"
                               Checked="TwoPersonAiToggle_Changed" Unchecked="TwoPersonAiToggle_Changed"/>
                 </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                    <ComboBox x:Name="TranslateModeCombo" ToolTipService.ToolTip="Translation Mode" SelectionChanged="TranslateModeCombo_SelectionChanged" Width="140">
-                        <ComboBoxItem Content="🌐 Trans: Off" Tag="off" IsSelected="True"/>
-                        <ComboBoxItem Content="🇹🇷 Auto Turkish" Tag="tr"/>
-                        <ComboBoxItem Content="🇬🇧 Auto English" Tag="en"/>
-                    </ComboBox>
-                    <Button x:Name="ReadyForTurnBtn" Content="✓ Ready (0/2)" Click="ReadyForTurn_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Confirm ready for next round. When all players are ready, AI automatically narrates consequences and starts next round!"/>
-                    <Button x:Name="AdvanceTurnBtn" Content="Next Turn &#xE72A;" Click="AdvanceTurn_Click"/>
-                    <Button x:Name="TriggerNarratorBtn" Content="Narrator Phase" Click="TriggerNarrator_Click"/>
-                    <Button x:Name="RequestAiReplyBtn" Content="Trigger AI Response" Click="RequestAiReply_Click"/>
-                </StackPanel>
+                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalScrollMode="Auto" VerticalScrollMode="Disabled">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ComboBox x:Name="TranslateModeCombo" ToolTipService.ToolTip="Translation Mode" SelectionChanged="TranslateModeCombo_SelectionChanged" Width="140">
+                            <ComboBoxItem Content="🌐 Trans: Off" Tag="off" IsSelected="True"/>
+                            <ComboBoxItem Content="🇹🇷 Auto Turkish" Tag="tr"/>
+                            <ComboBoxItem Content="🇬🇧 Auto English" Tag="en"/>
+                        </ComboBox>
+                        <Button x:Name="ReadyForTurnBtn" Content="✓ Ready (0/2)" Click="ReadyForTurn_Click" Style="{StaticResource AccentButtonStyle}" ToolTipService.ToolTip="Confirm ready for next round. When all players are ready, AI automatically narrates consequences and starts next round!"/>
+                        <Button x:Name="AdvanceTurnBtn" Content="Next Turn &#xE72A;" Click="AdvanceTurn_Click"/>
+                        <Button x:Name="TriggerNarratorBtn" Content="Narrator Phase" Click="TriggerNarrator_Click"/>
+                        <Button x:Name="RequestAiReplyBtn" Content="Trigger AI Response" Click="RequestAiReply_Click"/>
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
         </Border>
 
