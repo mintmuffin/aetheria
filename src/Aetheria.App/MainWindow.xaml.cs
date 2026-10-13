@@ -175,11 +175,6 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void ContentHostBorder_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        UpdateContentFrameScale();
-    }
-
     private void MainWindow_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
     {
         var ctrl = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control);
@@ -220,7 +215,7 @@ public sealed partial class MainWindow : Window
 
     public void SetZoom(double factor, bool notify = true)
     {
-        AccessibilityManager.Current.SetZoomFactor(factor, notify: false);
+        AccessibilityManager.Current.SetZoomFactor(factor, notify: true);
         ApplyZoom(AccessibilityManager.Current.ZoomFactor, notify);
     }
 
@@ -228,7 +223,6 @@ public sealed partial class MainWindow : Window
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            UpdateContentFrameScale();
             if (ZoomLabelText != null)
             {
                 ZoomLabelText.Text = $"{(int)Math.Round(factor * 100)}%";
@@ -238,51 +232,5 @@ public sealed partial class MainWindow : Window
                 ShowNotification("Zoom Updated", $"Interface display zoom set to {(int)Math.Round(factor * 100)}%", InfoBarSeverity.Informational);
             }
         });
-    }
-
-    private void UpdateContentFrameScale()
-    {
-        var factor = AccessibilityManager.Current.ZoomFactor;
-        if (factor <= 0.01) factor = 1.0;
-
-        if (ContentScaleTransform != null)
-        {
-            ContentScaleTransform.ScaleX = factor;
-            ContentScaleTransform.ScaleY = factor;
-        }
-
-        if (ContentHostBorder != null && ContentFrame != null && ScaledContentHost != null)
-        {
-            double availableW = ContentHostBorder.ActualWidth;
-            double availableH = ContentHostBorder.ActualHeight;
-
-            if (availableW > 0 && availableH > 0)
-            {
-                if (Math.Abs(factor - 1.0) < 0.001)
-                {
-                    ContentFrame.Width = double.NaN;
-                    ContentFrame.Height = double.NaN;
-                    ContentFrame.HorizontalAlignment = HorizontalAlignment.Stretch;
-                    ContentFrame.VerticalAlignment = VerticalAlignment.Stretch;
-                    ScaledContentHost.Width = double.NaN;
-                    ScaledContentHost.Height = double.NaN;
-                }
-                else
-                {
-                    ContentFrame.HorizontalAlignment = HorizontalAlignment.Left;
-                    ContentFrame.VerticalAlignment = VerticalAlignment.Top;
-
-                    // Ensure minimum readable width of 750px for content cards/toolbars
-                    double layoutW = Math.Max(availableW / factor, 750.0);
-                    double layoutH = availableH / factor;
-
-                    ContentFrame.Width = layoutW;
-                    ContentFrame.Height = layoutH;
-
-                    ScaledContentHost.Width = layoutW * factor;
-                    ScaledContentHost.Height = layoutH * factor;
-                }
-            }
-        }
     }
 }

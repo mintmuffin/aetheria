@@ -16,7 +16,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Product>Aetheria Roleplay Platform</Product>
     <Company>Aetheria Studio</Company>
     <Description>Native Windows 11 Single-Player and Multiplayer AI Roleplay Platform</Description>

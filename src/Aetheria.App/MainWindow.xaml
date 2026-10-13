@@ -123,24 +123,7 @@
                 </Grid.RowDefinitions>
 
                 <InfoBar x:Name="GlobalInfoBar" Grid.Row="0" IsOpen="False" IsClosable="True" Margin="20,10,20,0"/>
-                <Border x:Name="ContentHostBorder" Grid.Row="1" SizeChanged="ContentHostBorder_SizeChanged">
-                    <ScrollViewer x:Name="ContentScrollViewer"
-                                  HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Disabled"
-                                  HorizontalScrollMode="Auto"
-                                  VerticalScrollMode="Disabled">
-                        <Grid x:Name="ScaledContentHost">
-                            <Frame x:Name="ContentFrame"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Top"
-                                   RenderTransformOrigin="0,0">
-                                <Frame.RenderTransform>
-                                    <ScaleTransform x:Name="ContentScaleTransform" ScaleX="1.0" ScaleY="1.0"/>
-                                </Frame.RenderTransform>
-                            </Frame>
-                        </Grid>
-                    </ScrollViewer>
-                </Border>
+                <Frame x:Name="ContentFrame" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </Grid>
         </NavigationView>
     </Grid>

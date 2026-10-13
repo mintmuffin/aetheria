@@ -21,6 +21,8 @@ public sealed class AccessibilityManager
 
     public double ZoomFactor { get; private set; } = 1.0;
     public int RoleplayFontSize { get; private set; } = 14;
+    public double EffectiveFontSize => Math.Round(RoleplayFontSize * ZoomFactor, 1);
+    public double ZoomScale(double baseVal) => Math.Round(baseVal * ZoomFactor, 1);
     public string RoleplayFontFamily { get; private set; } = "Default";
     public bool ExpandedLineSpacing { get; private set; } = false;
     public bool HighContrastCards { get; private set; } = false;
@@ -132,7 +134,7 @@ public sealed class AccessibilityManager
 
     public double GetCalculatedLineHeight()
     {
-        return ExpandedLineSpacing ? RoleplayFontSize * 1.85 : RoleplayFontSize * 1.5;
+        return ExpandedLineSpacing ? EffectiveFontSize * 1.85 : EffectiveFontSize * 1.5;
     }
 
     public async Task SpeakTextAsync(string text, CancellationToken ct = default)

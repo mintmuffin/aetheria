@@ -133,7 +133,7 @@ $AppxManifestContent = @"
   <Identity
     Name="AetheriaStudio.AetheriaRoleplayPlatform"
     Publisher="CN=AetheriaStudio"
-    Version="1.0.2.0"
+    Version="1.0.3.0"
     ProcessorArchitecture="x64" />
 
   <Properties>

@@ -358,8 +358,9 @@ public sealed partial class RoleplayPage : Page
         var acc = AccessibilityManager.Current;
         if (MessageInputBox != null)
         {
-            MessageInputBox.FontSize = acc.RoleplayFontSize;
+            MessageInputBox.FontSize = acc.EffectiveFontSize;
             MessageInputBox.FontFamily = acc.GetConfiguredFontFamily();
+            MessageInputBox.MinHeight = Math.Max(56, acc.ZoomScale(56));
         }
 
         // Render Transcript Messages
@@ -387,7 +388,7 @@ public sealed partial class RoleplayPage : Page
                         : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.MediumPurple)))
                 : (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardStrokeColorDefaultBrush"],
             Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
-            Padding = new Thickness(14, 10, 14, 10)
+            Padding = new Thickness(acc.ZoomScale(14), acc.ZoomScale(10), acc.ZoomScale(14), acc.ZoomScale(10))
         };
 
         var stack = new StackPanel { Spacing = 6 };
@@ -405,7 +406,7 @@ public sealed partial class RoleplayPage : Page
         {
             Text = $"{msg.SenderName}{roleBadge} • {msg.Timestamp.ToLocalTime():HH:mm}",
             FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-            FontSize = Math.Max(12, acc.RoleplayFontSize - 1),
+            FontSize = Math.Max(12, acc.EffectiveFontSize - 2),
             FontFamily = acc.GetConfiguredFontFamily()
         };
         header.Children.Add(titleText);
@@ -487,7 +488,7 @@ public sealed partial class RoleplayPage : Page
             Text = msg.Content,
             TextWrapping = TextWrapping.Wrap,
             IsTextSelectionEnabled = true,
-            FontSize = acc.RoleplayFontSize,
+            FontSize = acc.EffectiveFontSize,
             FontFamily = acc.GetConfiguredFontFamily(),
             LineHeight = acc.GetCalculatedLineHeight()
         };
@@ -498,7 +499,7 @@ public sealed partial class RoleplayPage : Page
         {
             CornerRadius = new CornerRadius(6),
             Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ControlFillColorSecondaryBrush"],
-            Padding = new Thickness(10, 8, 10, 8),
+            Padding = new Thickness(acc.ZoomScale(10), acc.ZoomScale(8), acc.ZoomScale(10), acc.ZoomScale(8)),
             Margin = new Thickness(0, 6, 0, 0),
             BorderThickness = acc.HighContrastCards ? new Thickness(1.5) : new Thickness(1),
             BorderBrush = acc.HighContrastCards
@@ -515,7 +516,7 @@ public sealed partial class RoleplayPage : Page
         var transBadge = new TextBlock
         {
             Text = "🌐 Translation",
-            FontSize = Math.Max(11, acc.RoleplayFontSize - 2),
+            FontSize = Math.Max(11, acc.EffectiveFontSize - 3),
             FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
             Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
             VerticalAlignment = VerticalAlignment.Center
@@ -543,7 +544,7 @@ public sealed partial class RoleplayPage : Page
         {
             Text = "",
             FontStyle = Windows.UI.Text.FontStyle.Italic,
-            FontSize = acc.RoleplayFontSize,
+            FontSize = acc.EffectiveFontSize,
             FontFamily = acc.GetConfiguredFontFamily(),
             LineHeight = acc.GetCalculatedLineHeight(),
             TextWrapping = TextWrapping.Wrap,
