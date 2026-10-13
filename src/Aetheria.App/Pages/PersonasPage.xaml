@@ -1,0 +1,72 @@
+<Page
+    x:Class="Aetheria.App.Pages.PersonasPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="20,16,20,20" ColumnSpacing="18">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: Personas Roster -->
+        <Border Grid.Column="0" Style="{StaticResource FluentSurfaceCardStyle}" Padding="14">
+            <Grid RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Player Personas ({{user}})" Style="{StaticResource SectionTitleTextStyle}"/>
+                <ListView x:Name="PersonasList" Grid.Row="1" SelectionChanged="PersonasList_SelectionChanged"/>
+
+                <StackPanel Grid.Row="2" Spacing="6">
+                    <Button Content="+ New Persona" HorizontalAlignment="Stretch" Style="{StaticResource AccentButtonStyle}" Click="NewPersona_Click"/>
+                    <Grid ColumnSpacing="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="Import .rppersona" HorizontalAlignment="Stretch" Click="ImportPersona_Click"/>
+                        <Button Grid.Column="1" Content="Export .rppersona" HorizontalAlignment="Stretch" Click="ExportPersona_Click"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Right: Persona Editor -->
+        <Border Grid.Column="1" Style="{StaticResource FluentSurfaceCardStyle}" Padding="20">
+            <StackPanel Spacing="16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="Player Persona Identity" Style="{StaticResource PageHeaderTextStyle}"/>
+                        <TextBlock Text="Defines the human participant's identity, appearance, and background." Style="{StaticResource CaptionSecondaryTextStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Content="Save Persona" Style="{StaticResource AccentButtonStyle}" Click="SavePersona_Click"/>
+                        <Button Content="Delete" Click="DeletePersona_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="PersonaNameBox" Grid.Column="0" Header="Persona Display Name ({{user}}) *"/>
+                    <ToggleSwitch x:Name="IsDefaultSwitch" Grid.Column="1" Header="Default Persona" VerticalAlignment="Bottom"/>
+                </Grid>
+
+                <TextBox x:Name="PersonaDescBox" Header="Summary &amp; Role Description" AcceptsReturn="True" TextWrapping="Wrap" Height="84"/>
+                <TextBox x:Name="PersonaAppearanceBox" Header="Physical Appearance &amp; Attire" AcceptsReturn="True" TextWrapping="Wrap" Height="84"/>
+                <TextBox x:Name="PersonaPersonalityBox" Header="Personality &amp; Demeanor" AcceptsReturn="True" TextWrapping="Wrap" Height="84"/>
+                <TextBox x:Name="PersonaBackgroundBox" Header="Backstory &amp; Scenario Attributes" AcceptsReturn="True" TextWrapping="Wrap" Height="84"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

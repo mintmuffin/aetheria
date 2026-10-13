@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Aetheria Roleplay</string>
+    <string name="tab_roleplay">Roleplay</string>
+    <string name="tab_characters">Characters</string>
+    <string name="tab_worlds">Worlds</string>
+    <string name="tab_personas">Personas</string>
+    <string name="tab_multiplayer">Co-Op</string>
+    <string name="tab_settings">AI Settings</string>
+    
+    <string name="action_send">Send</string>
+    <string name="action_roll_dice">Roll Dice</string>
+    <string name="action_chips_inspect">Inspect</string>
+    <string name="action_chips_whisper">Whisper</string>
+    <string name="action_chips_action">Action</string>
+    <string name="action_chips_attack">Attack</string>
+    <string name="action_chips_d20">d20</string>
+    <string name="action_clear">Clear Chat</string>
+    
+    <string name="connect_host">Connect to PC Host</string>
+    <string name="btn_connect">Connect</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_save">Save</string>
+</resources>

@@ -1,0 +1,333 @@
+<Page
+    x:Class="Aetheria.App.Pages.MultiplayerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,16">
+        <StackPanel Spacing="16">
+            <!-- Top Banner -->
+            <Border Style="{StaticResource CardPanelStyle}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Multiplayer &amp; Co-Op Roleplay Hub" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock Text="Party lobbies, pre-game character picking, and seamless turn synchronization over LAN, Hamachi, or Direct IP."
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Border Background="{ThemeResource ControlFillColorSecondaryBrush}" CornerRadius="6" Padding="12,6">
+                            <TextBlock x:Name="LiveStatusIndicator" Text="Mode: Offline (Single-Player)" FontWeight="SemiBold" FontSize="12" />
+                        </Border>
+                        <Button Content="Open Roleplay Workspace" Style="{StaticResource AccentButtonStyle}" Click="GoToRoleplay_Click" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ACTIVE PARTY LOBBY SECTION (Prominent when Hosting or Connected) -->
+            <Border x:Name="ActiveLobbyPanel" Style="{StaticResource CardPanelStyle}" Visibility="Collapsed" BorderThickness="1.5" BorderBrush="{ThemeResource AccentFillColorDefaultBrush}">
+                <StackPanel Spacing="14">
+                    <!-- Lobby Header -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="🎮 PARTY LOBBY" FontWeight="Bold" FontSize="11" Foreground="White" />
+                                </Border>
+                                <TextBlock x:Name="LobbyRoomTitleText" Text="Roleplay Session Room" FontWeight="Bold" FontSize="18" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <TextBlock x:Name="LobbyGameModeBadge" Text="Mode: Freeform" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+                                <TextBlock Text="•" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock x:Name="LobbyWorldBadge" Text="World: Tokyo" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+                                <TextBlock Text="•" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <TextBlock x:Name="LobbyConnectionInfoText" Text="Port 7777" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button Content="📋 Copy Room Invite" Click="CopyInviteDetails_Click" />
+                            <Button x:Name="LobbyLeaveBtn" Content="Leave Room" Click="LobbyLeave_Click" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Lobby Two-Column Layout -->
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.1*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: Character & Role Selection + Ready State -->
+                        <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Padding="14">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="🎭 Select Your Playable Character / Persona" FontWeight="SemiBold" FontSize="14" />
+                                <TextBlock Text="Choose which character you will control before entering the roleplay world. Your dialogue and actions will appear as this character!"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="11" TextWrapping="Wrap" />
+
+                                <ComboBox x:Name="LobbyRolePickerCombo" Header="Playable Character" HorizontalAlignment="Stretch" SelectionChanged="LobbyRolePickerCombo_SelectionChanged" />
+
+                                <!-- Preview Card -->
+                                <Border Background="{ThemeResource ControlFillColorDefaultBrush}" CornerRadius="6" Padding="10">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock x:Name="LobbyPreviewNameText" Text="Character Name" FontWeight="SemiBold" FontSize="13" />
+                                        <TextBlock x:Name="LobbyPreviewBioText" Text="Bio and personality will appear here..."
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="11" TextWrapping="Wrap" MaxHeight="60" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="LobbyReadyBtn" Grid.Column="0" Content="⌛ Not Ready" HorizontalAlignment="Stretch" Click="LobbyReady_Click" />
+                                    <Button x:Name="LobbyLaunchBtn" Grid.Column="1" Content="🚀 Launch Adventure" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="LobbyLaunch_Click" />
+                                </Grid>
+                                <TextBlock x:Name="LobbyWaitingLaunchText" Text="Host will launch adventure when all party members are ready."
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="11" TextAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Right: Party Members Roster & Pre-Game Comms -->
+                        <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Padding="14">
+                            <StackPanel Spacing="10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="👥 Party Members &amp; Ready Status" FontWeight="SemiBold" FontSize="14" />
+                                    <TextBlock Grid.Column="1" x:Name="LobbyPartyCountText" Text="0 Players" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+                                </Grid>
+
+                                <ListView x:Name="LobbyPartyListView" MaxHeight="130" SelectionMode="None" />
+
+                                <TextBlock Text="💬 Party Talk (Pre-Game Lobby)" FontWeight="SemiBold" FontSize="12" Margin="0,4,0,0" />
+                                <ListView x:Name="LobbyChatListView" MaxHeight="90" SelectionMode="None" />
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="LobbyChatInputBox" Grid.Column="0" PlaceholderText="Say something to the party..." KeyDown="LobbyChatInputBox_KeyDown" />
+                                    <Button x:Name="LobbyChatSendBtn" Grid.Column="1" Content="Send" Click="LobbyChatSend_Click" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Host & Join Split Grid (Room Creation & Matchmaking) -->
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Authoritative Host Server -->
+                <Border Grid.Column="0" Style="{StaticResource CardPanelStyle}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Host a Roleplay Session (Create Room)" Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+                        <TextBlock Text="Your PC coordinates turn order, world state, and AI generation so your co-op partner can play with zero AI key/GPU requirements."
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+
+                        <TextBox x:Name="HostRoomTitleBox" Header="Room Title / Story Name" PlaceholderText="e.g. Chainsaw Man: Bomb Girl Arc Co-Op" Text="Chainsaw Man: Bomb Girl Arc Co-Op" />
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" x:Name="HostWorldCombo" Header="World / Universe" HorizontalAlignment="Stretch" />
+                            <ComboBox Grid.Column="1" x:Name="HostModeCombo" Header="Session Mode" HorizontalAlignment="Stretch">
+                                <ComboBoxItem Content="Two-Person Private (You &amp; Partner)" Tag="TwoPersonPrivate" />
+                                <ComboBoxItem Content="Cooperative PvE Adventure" Tag="CooperativePvE" />
+                                <ComboBoxItem Content="Freeform Roleplay" Tag="Freeform" />
+                                <ComboBoxItem Content="Turn-Based Roleplay" Tag="TurnBased" />
+                                <ComboBoxItem Content="Real-Time Roleplay" Tag="RealTime" />
+                                <ComboBoxItem Content="Sandbox Mode" Tag="Sandbox" />
+                            </ComboBox>
+                        </Grid>
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="110" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" x:Name="HostPersonaCombo" Header="Host Character / Persona" HorizontalAlignment="Stretch" />
+                            <NumberBox Grid.Column="1" x:Name="HostPortBox" Header="TCP Port" Value="7777" Minimum="1024" Maximum="65535" />
+                            <NumberBox Grid.Column="2" x:Name="MaxPlayersBox" Header="Max Players" Value="4" Minimum="2" Maximum="16" />
+                        </Grid>
+
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" x:Name="HostInviteTokenBox" Header="Invite Token" />
+                            <Button Grid.Column="1" Content="Regenerate" VerticalAlignment="Bottom" Click="RegenerateToken_Click" />
+                            <Button Grid.Column="2" Content="Copy Invite" VerticalAlignment="Bottom" Click="CopyInviteDetails_Click" />
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <CheckBox x:Name="LanBroadcastCheck" Content="Enable UDP LAN Discovery Beacon (Port 47891)" IsChecked="True" />
+                            <CheckBox x:Name="AllowAiInPrivateCheck" Content="Enable AI Narrator/NPCs in 2-Person Private Mode" IsChecked="False" />
+                        </StackPanel>
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" x:Name="StartHostBtn" Content="Open Room &amp; Party Lobby" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="StartHost_Click" />
+                            <Button Grid.Column="1" x:Name="StopHostBtn" Content="Stop Hosting" HorizontalAlignment="Stretch" IsEnabled="False" Click="StopHost_Click" />
+                        </Grid>
+
+                        <!-- Mobile & Android Companion Connection -->
+                        <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Padding="12" Margin="0,4,0,0">
+                            <StackPanel Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📱 Mobile &amp; Android App Companion" FontWeight="SemiBold" FontSize="13" />
+                                    <TextBlock x:Name="MobileCompanionStatusText" Text="(Starts with Host on Port 7778)" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+                                </StackPanel>
+                                <TextBlock Text="Connect your Android phone using the app or open this URL in Chrome on your phone:" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" x:Name="MobileCompanionUrlBox" IsReadOnly="True" Text="http://127.0.0.1:7778/" />
+                                    <Button Grid.Column="1" Content="Copy URL" Click="CopyMobileUrl_Click" />
+                                    <Button Grid.Column="2" Content="Open in Browser" Click="OpenMobileUrl_Click" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Right: Client Join & LAN Discovery -->
+                <Border Grid.Column="1" Style="{StaticResource CardPanelStyle}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Join a Hosted Session (Join Room)" Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+                        <TextBlock Text="Connect via LAN IP (192.168.x.x), Virtual LAN IP (Hamachi 25.x.x.x / Radmin 26.x.x.x / Tailscale), or Port-Forwarded Public IP."
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" x:Name="JoinHostAddressBox" Header="Host IPv4 Address or Hostname" PlaceholderText="127.0.0.1 or 25.x.x.x (Hamachi)" Text="127.0.0.1" />
+                            <NumberBox Grid.Column="1" x:Name="JoinPortBox" Header="Host TCP Port" Value="7777" Minimum="1024" Maximum="65535" />
+                        </Grid>
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" x:Name="JoinInviteTokenBox" Header="Session Invite Token" PlaceholderText="Paste 12-char token from host..." />
+                            <ComboBox Grid.Column="1" x:Name="JoinPersonaCombo" Header="Your Playable Character / Persona" HorizontalAlignment="Stretch" />
+                        </Grid>
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" x:Name="ConnectClientBtn" Content="Join Room &amp; Enter Lobby" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="ConnectClient_Click" />
+                            <Button Grid.Column="1" x:Name="DisconnectClientBtn" Content="Disconnect" HorizontalAlignment="Stretch" IsEnabled="False" Click="DisconnectClient_Click" />
+                        </Grid>
+
+                        <!-- LAN Discovery -->
+                        <StackPanel Spacing="6" Margin="0,4,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Discovered LAN Sessions" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" x:Name="ScanLanBtn" Content="Scan LAN (UDP)" Click="ScanLan_Click" />
+                            </Grid>
+                            <ListView x:Name="DiscoveredLanListView" MaxHeight="110" SelectionMode="Single" SelectionChanged="DiscoveredLanListView_SelectionChanged" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Bottom Row: Connected Participants & Network / Virtual LAN Diagnostics -->
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Connected Participants & Session Roster -->
+                <Border Grid.Column="0" Style="{StaticResource CardPanelStyle}">
+                    <StackPanel Spacing="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Session Participants, Character Sync &amp; Presence" Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+                            <Button Grid.Column="1" Content="Refresh Roster" Click="RefreshStatus_Click" />
+                        </Grid>
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" x:Name="SyncCustomCharCombo" Header="Sync Any Custom Character from Your PC into Session" HorizontalAlignment="Stretch" />
+                            <Button Grid.Column="1" x:Name="SyncCustomCharBtn" Content="Sync Character to Session" VerticalAlignment="Bottom" Click="SyncCharacterToSession_Click" />
+                        </Grid>
+                        <ListView x:Name="ParticipantsListView" MaxHeight="160" SelectionMode="None" />
+                        <TextBlock Text="Multiplayer Event &amp; Synchronization Log" FontWeight="SemiBold" FontSize="12" Margin="0,6,0,0" />
+                        <ListView x:Name="MultiplayerLogListView" MaxHeight="140" SelectionMode="None" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Network Interfaces, Hamachi/VPN Detection & Endpoint Tester -->
+                <Border Grid.Column="1" Style="{StaticResource CardPanelStyle}">
+                    <StackPanel Spacing="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Network Interfaces &amp; Virtual LAN Diagnostics" Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+                            <Button Grid.Column="1" Content="Refresh Adapters" Click="RefreshAdapters_Click" />
+                        </Grid>
+                        <TextBlock Text="Detected IPv4 addresses on this PC (share your LAN or Hamachi/Radmin/Tailscale IP with your partner):"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                        <ListView x:Name="NetworkAdaptersListView" MaxHeight="165" SelectionMode="Single" />
+
+                        <TextBlock Text="TCP Port Reachability Diagnostic" FontWeight="SemiBold" FontSize="12" Margin="0,6,0,0" />
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" x:Name="DiagnosticResultText" Text="Click 'Test Target Host:Port' to verify TCP connectivity before joining."
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" VerticalAlignment="Center" TextWrapping="Wrap" />
+                            <Button Grid.Column="1" Content="Test Target Host:Port" Click="TestEndpoint_Click" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

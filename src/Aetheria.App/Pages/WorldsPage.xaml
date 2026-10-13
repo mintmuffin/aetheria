@@ -1,0 +1,200 @@
+<Page
+    x:Class="Aetheria.App.Pages.WorldsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid ColumnSpacing="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Column: World Roster -->
+        <Border Grid.Column="0" Style="{StaticResource CardPanelStyle}" Padding="14">
+            <Grid RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Worlds &amp; Scenarios" Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+
+                <TextBox Grid.Row="1" x:Name="SearchBox" PlaceholderText="Filter worlds by name or genre..." TextChanged="SearchBox_TextChanged" />
+
+                <ListView Grid.Row="2" x:Name="WorldsListView" SelectionMode="Single" SelectionChanged="WorldsListView_SelectionChanged" />
+
+                <StackPanel Grid.Row="3" Spacing="6">
+                    <Grid ColumnSpacing="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="+ New World" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="NewWorld_Click" />
+                        <Button Grid.Column="1" Content="Duplicate" HorizontalAlignment="Stretch" Click="DuplicateWorld_Click" />
+                    </Grid>
+                    <Grid ColumnSpacing="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="Import .rpworld" HorizontalAlignment="Stretch" Click="ImportWorld_Click" />
+                        <Button Grid.Column="1" Content="Export .rpworld" HorizontalAlignment="Stretch" Click="ExportWorld_Click" />
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Right Column: Structured World & Lorebook Editor -->
+        <Border Grid.Column="1" Style="{StaticResource CardPanelStyle}">
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Header Actions -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock x:Name="EditorHeaderTitle" Text="World Architect" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock x:Name="VersionMetaText" Text="Schema 1.0 • Structured World-State &amp; Lorebook" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <Button Content="Delete" Click="DeleteWorld_Click" />
+                        <Button Content="Save World" Style="{StaticResource AccentButtonStyle}" Click="SaveWorld_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Editor Scrollable Area -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                    <StackPanel Spacing="16">
+                        <!-- Core Overview -->
+                        <Expander Header="1. Setting, Genre, Tone &amp; Narrative Rules" IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                            <StackPanel Spacing="12" Padding="4">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" x:Name="NameBox" Header="World Title" PlaceholderText="e.g., Oakhaven: The Obsidian Docks" />
+                                    <TextBox Grid.Column="1" x:Name="GenreBox" Header="Genre" PlaceholderText="e.g., Dark Gaslamp Fantasy" />
+                                    <TextBox Grid.Column="2" x:Name="ToneBox" Header="Tone &amp; Atmosphere" PlaceholderText="e.g., Atmospheric, Mysterious, Gritty" />
+                                </Grid>
+                                <TextBox x:Name="SettingSummaryBox" Header="Setting Summary" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="72" />
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" x:Name="NarrativeRulesBox" Header="Narrative Rules &amp; World Laws" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" />
+                                    <TextBox Grid.Column="1" x:Name="CustomMechanicsBox" Header="Custom Game Mechanics" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" />
+                                </Grid>
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" x:Name="WorldHistoryBox" Header="World History &amp; Era" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="72" />
+                                    <TextBox Grid.Column="1" x:Name="StartingConditionsBox" Header="Scenario Starting Conditions" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="72" />
+                                </Grid>
+                            </StackPanel>
+                        </Expander>
+
+                        <!-- Lorebook Entries -->
+                        <Expander Header="2. Lorebook &amp; Keyword-Triggered World Knowledge" IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                            <StackPanel Spacing="10" Padding="4">
+                                <TextBlock Text="Lore entries are automatically injected into the AI prompt when their keywords appear in recent conversation or when marked as Constant."
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                                <ListView x:Name="LoreEntriesListView" SelectionMode="Single" MaxHeight="190" SelectionChanged="LoreEntriesListView_SelectionChanged" />
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" x:Name="LoreTitleBox" Header="Entry Title" PlaceholderText="e.g., Aetherium Smuggling" />
+                                    <TextBox Grid.Column="1" x:Name="LoreKeywordsBox" Header="Trigger Keywords (comma-separated)" PlaceholderText="aetherium, crystal, smuggling" />
+                                    <NumberBox Grid.Column="2" x:Name="LorePriorityBox" Header="Priority" Value="10" Minimum="1" Maximum="100" />
+                                    <CheckBox Grid.Column="3" x:Name="LoreConstantCheck" Content="Always Active" VerticalAlignment="Bottom" />
+                                </Grid>
+                                <TextBox x:Name="LoreContentBox" Header="Lore Content" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="65" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="+ Add / Update Lore Entry" Click="AddOrUpdateLore_Click" />
+                                    <Button Content="Remove Selected Lore" Click="RemoveLore_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Expander>
+
+                        <!-- Locations & Points of Interest -->
+                        <Expander Header="3. Locations &amp; Points of Interest" IsExpanded="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                            <StackPanel Spacing="10" Padding="4">
+                                <ListView x:Name="LocationsListView" SelectionMode="Single" MaxHeight="160" />
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" x:Name="LocNameBox" Header="Location Name" PlaceholderText="e.g., The Obsidian Flagon" />
+                                    <TextBox Grid.Column="1" x:Name="LocRegionBox" Header="Region / District" PlaceholderText="e.g., Lower Docks" />
+                                    <TextBox Grid.Column="2" x:Name="LocDescBox" Header="Description" PlaceholderText="Dimly lit tavern overhanging the canal..." />
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="+ Add Location" Click="AddLocation_Click" />
+                                    <Button Content="Remove Selected Location" Click="RemoveLocation_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Expander>
+
+                        <!-- Factions & Quests -->
+                        <Expander Header="4. Factions, Quests &amp; World-State Variables" IsExpanded="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                            <StackPanel Spacing="12" Padding="4">
+                                <TextBlock Text="Factions &amp; Organizations" FontWeight="SemiBold" />
+                                <ListView x:Name="FactionsListView" SelectionMode="Single" MaxHeight="140" />
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" x:Name="FactionNameBox" Header="Faction Name" />
+                                    <TextBox Grid.Column="1" x:Name="FactionAlignmentBox" Header="Alignment" />
+                                    <TextBox Grid.Column="2" x:Name="FactionDescBox" Header="Description &amp; Goals" />
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="+ Add Faction" Click="AddFaction_Click" />
+                                    <Button Content="Remove Selected Faction" Click="RemoveFaction_Click" />
+                                </StackPanel>
+
+                                <TextBlock Text="World-State Variables (Key = Value)" FontWeight="SemiBold" Margin="0,8,0,0" />
+                                <ListView x:Name="StateVarsListView" SelectionMode="Single" MaxHeight="140" />
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" x:Name="VarKeyBox" PlaceholderText="Variable Name (e.g., AlertLevel)" />
+                                    <TextBox Grid.Column="1" x:Name="VarValBox" PlaceholderText="Initial Value (e.g., High)" />
+                                    <Button Grid.Column="2" Content="Set Variable" Click="SetWorldVar_Click" />
+                                    <Button Grid.Column="3" Content="Remove" Click="RemoveWorldVar_Click" />
+                                </Grid>
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

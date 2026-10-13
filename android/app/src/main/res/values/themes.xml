@@ -1,0 +1,12 @@
+<resources>
+    <style name="Theme.AetheriaRoleplay" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">@color/md_primary</item>
+        <item name="android:colorAccent">@color/md_primaryContainer</item>
+        <item name="android:statusBarColor">@color/md_surface</item>
+        <item name="android:navigationBarColor">@color/md_surface</item>
+        <item name="android:windowBackground">@color/md_background</item>
+        <item name="android:textColorPrimary">@color/md_onSurface</item>
+        <item name="android:textColorSecondary">@color/md_onSurfaceVariant</item>
+        <item name="android:editTextColor">@color/md_onSurface</item>
+    </style>
+</resources>

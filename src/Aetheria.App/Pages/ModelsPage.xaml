@@ -1,0 +1,176 @@
+<Page
+    x:Class="Aetheria.App.Pages.ModelsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid ColumnSpacing="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="310" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Column: Model Presets Roster -->
+        <Border Grid.Column="0" Style="{StaticResource CardPanelStyle}" Padding="14">
+            <Grid RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="AI Models &amp; Providers" Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+                <TextBlock Grid.Row="1" Text="Local &amp; Cloud Provider Presets (.rpmodel)" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+
+                <ListView Grid.Row="2" x:Name="PresetsListView" SelectionMode="Single" SelectionChanged="PresetsListView_SelectionChanged" />
+
+                <StackPanel Grid.Row="3" Spacing="6">
+                    <Grid ColumnSpacing="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="+ New Preset" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="NewPreset_Click" />
+                        <Button Grid.Column="1" Content="Set Default" HorizontalAlignment="Stretch" Click="SetDefault_Click" />
+                    </Grid>
+                    <Grid ColumnSpacing="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="Import .rpmodel" HorizontalAlignment="Stretch" Click="ImportPreset_Click" />
+                        <Button Grid.Column="1" Content="Export .rpmodel" HorizontalAlignment="Stretch" Click="ExportPreset_Click" />
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Right Column: Provider Adapter, DPAPI Vault & Generation Parameters -->
+        <Border Grid.Column="1" Style="{StaticResource CardPanelStyle}">
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock x:Name="EditorHeaderTitle" Text="Model Preset Configuration" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock x:Name="ConnectionStatusText" Text="Select a provider preset or click Test Connection to verify availability."
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="TestConnectionBtn" Content="Test Connection &amp; Fetch Models" Click="TestConnection_Click" />
+                        <Button Content="Delete" Click="DeletePreset_Click" />
+                        <Button Content="Save Preset" Style="{StaticResource AccentButtonStyle}" Click="SavePreset_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Scrollable Configuration -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                    <StackPanel Spacing="16">
+                        <!-- Provider & Endpoint -->
+                        <Expander Header="1. Provider Adapter &amp; Endpoint Configuration" IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                            <StackPanel Spacing="12" Padding="4">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" x:Name="PresetNameBox" Header="Preset Display Name" PlaceholderText="e.g., RX 580 8GB • KoboldCpp Vulkan" />
+                                    <ComboBox Grid.Column="1" x:Name="ProviderCombo" Header="AI Provider Adapter" HorizontalAlignment="Stretch" SelectionChanged="ProviderCombo_SelectionChanged">
+                                        <ComboBoxItem Content="Ollama (Local)" Tag="Ollama" />
+                                        <ComboBoxItem Content="KoboldCpp (Vulkan / RX 580)" Tag="KoboldCpp" />
+                                        <ComboBoxItem Content="OpenAI (ChatGPT)" Tag="OpenAI" />
+                                        <ComboBoxItem Content="Google Gemini" Tag="GoogleGemini" />
+                                        <ComboBoxItem Content="Anthropic Claude" Tag="AnthropicClaude" />
+                                        <ComboBoxItem Content="OpenRouter" Tag="OpenRouter" />
+                                        <ComboBoxItem Content="DeepSeek" Tag="DeepSeek" />
+                                        <ComboBoxItem Content="Groq (Ultra-Fast Cloud)" Tag="Groq" />
+                                        <ComboBoxItem Content="LM Studio (Local)" Tag="LMStudio" />
+                                        <ComboBoxItem Content="Custom OpenAI-Compatible" Tag="CustomOpenAiCompatible" />
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" x:Name="EndpointUrlBox" Header="API Base URL / Endpoint" PlaceholderText="http://localhost:11434" />
+                                    <TextBox Grid.Column="1" x:Name="ModelIdBox" Header="Target Model ID" PlaceholderText="llama3.1:8b-instruct-q4_K_M" />
+                                    <ComboBox Grid.Column="2" x:Name="DiscoveredModelsCombo" Header="Discovered Server Models" HorizontalAlignment="Stretch"
+                                              PlaceholderText="Click Test Connection..." SelectionChanged="DiscoveredModelsCombo_SelectionChanged" />
+                                </Grid>
+                            </StackPanel>
+                        </Expander>
+
+                        <!-- DPAPI Credential Vault -->
+                        <Expander Header="2. Windows DPAPI Encrypted API Key Vault (Never Exported)" IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                            <StackPanel Spacing="10" Padding="4">
+                                <TextBlock Text="API keys are encrypted on disk using Windows Data Protection API (CurrentUser scope) and are strictly excluded from .rpmodel exports, logs, and multiplayer packets."
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <PasswordBox Grid.Column="0" x:Name="ApiKeyPasswordBox" Header="Provider API Key (OpenAI, Gemini, Claude, OpenRouter, DeepSeek, Groq)"
+                                                 PlaceholderText="Enter sk-... or AIza... key to store in Windows DPAPI Vault" />
+                                    <Button Grid.Column="1" Content="Save Key to Vault" VerticalAlignment="Bottom" Style="{StaticResource AccentButtonStyle}" Click="SaveApiKey_Click" />
+                                    <Button Grid.Column="2" Content="Clear Stored Key" VerticalAlignment="Bottom" Click="ClearApiKey_Click" />
+                                </Grid>
+                                <TextBlock x:Name="VaultStatusBadge" Text="Vault Status: Checking..." FontWeight="SemiBold" FontSize="12" />
+                            </StackPanel>
+                        </Expander>
+
+                        <!-- Generation & Sampling Parameters -->
+                        <Expander Header="3. Sampling Parameters, Context Budget &amp; System Instructions" IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                            <StackPanel Spacing="12" Padding="4">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <NumberBox Grid.Column="0" x:Name="TempBox" Header="Temperature" Minimum="0.0" Maximum="2.0" SmallChange="0.05" Value="0.82" />
+                                    <NumberBox Grid.Column="1" x:Name="TopPBox" Header="Top-P" Minimum="0.05" Maximum="1.0" SmallChange="0.05" Value="0.92" />
+                                    <NumberBox Grid.Column="2" x:Name="TopKBox" Header="Top-K (Ollama)" Minimum="1" Maximum="200" Value="40" />
+                                    <NumberBox Grid.Column="3" x:Name="RepPenBox" Header="Repetition Penalty" Minimum="1.0" Maximum="1.5" SmallChange="0.02" Value="1.08" />
+                                </Grid>
+
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <NumberBox Grid.Column="0" x:Name="MaxTokensBox" Header="Max Output Tokens" Minimum="64" Maximum="8192" Value="600" />
+                                    <NumberBox Grid.Column="1" x:Name="ContextLengthBox" Header="Context Window (Tokens)" Minimum="1024" Maximum="131072" Value="4096" />
+                                    <CheckBox Grid.Column="2" x:Name="StreamToggle" Content="Stream Tokens Live" IsChecked="True" VerticalAlignment="Bottom" />
+                                    <CheckBox Grid.Column="3" x:Name="DefaultPresetCheck" Content="Default Session Preset" VerticalAlignment="Bottom" />
+                                </Grid>
+
+                                <TextBox x:Name="StopSequencesBox" Header="Stop Sequences (comma-separated)" PlaceholderText="e.g., \nUser:, \nSystem:" />
+                                <TextBox x:Name="SystemPrefixBox" Header="Global System Instruction Prefix" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="68" />
+                                <TextBox x:Name="HardwareNotesBox" Header="Hardware / Tuning Notes (Xeon E5-2690 v3 + RX 580 8GB)" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="56" />
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

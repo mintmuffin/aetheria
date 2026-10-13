@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/card_rounded_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tv_world_card_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="World Title"
+            android:textColor="@color/md_onSurface"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_world_card_select"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:text="Select"
+            android:textColor="@color/md_onPrimary"
+            android:textSize="12sp"
+            android:background="@drawable/button_primary_bg" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_world_card_genre"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Genre &amp; Tone"
+        android:textColor="@color/md_primary"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tv_world_card_setting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Setting and environment details..."
+        android:textColor="@color/md_onSurfaceVariant"
+        android:textSize="13sp"
+        android:maxLines="3" />
+
+</LinearLayout>

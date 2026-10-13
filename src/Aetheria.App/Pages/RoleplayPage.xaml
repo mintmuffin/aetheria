@@ -1,0 +1,293 @@
+<Page
+    x:Class="Aetheria.App.Pages.RoleplayPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="20,14,20,18" RowSpacing="12" ColumnSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="320"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Row 0: Session Controls & Model Switcher Bar -->
+        <Border Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource FluentSurfaceCardStyle}" Padding="14,10">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="220"/>
+                    <ColumnDefinition Width="165"/>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="165"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ComboBox x:Name="SessionCombo" Grid.Column="0" Header="Active Session" HorizontalAlignment="Stretch"
+                          SelectionChanged="SessionCombo_SelectionChanged"/>
+
+                <ComboBox x:Name="GameModeCombo" Grid.Column="1" Header="Game Mode" HorizontalAlignment="Stretch"
+                          SelectionChanged="GameModeCombo_SelectionChanged"/>
+
+                <ComboBox x:Name="CharacterCombo" Grid.Column="2" Header="Active Character" HorizontalAlignment="Stretch"
+                          SelectionChanged="CharacterCombo_SelectionChanged"/>
+
+                <ComboBox x:Name="PersonaCombo" Grid.Column="3" Header="Player Persona" HorizontalAlignment="Stretch"
+                          SelectionChanged="PersonaCombo_SelectionChanged"/>
+
+                <ComboBox x:Name="ModelPresetCombo" Grid.Column="4" Header="AI Model Preset (Live Switchable)" HorizontalAlignment="Stretch"
+                          SelectionChanged="ModelPresetCombo_SelectionChanged"/>
+
+                <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                    <Button Content="+ New" Click="NewSession_Click" ToolTipService.ToolTip="Create a new roleplay session"/>
+                    <Button Content="Export .rpsession" Click="ExportSession_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Row 1: Turn-Based / Mode Coordination Banner -->
+        <Border x:Name="TurnBanner" Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource FluentSurfaceCardStyle}" Padding="14,8">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <TextBlock x:Name="TurnStatusText" Text="Mode: Freeform • Location: Starting Area" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <Border x:Name="PartyRosterBorder" Background="{ThemeResource ControlFillColorSecondaryBrush}" CornerRadius="4" Padding="8,2" Visibility="Collapsed">
+                        <TextBlock x:Name="PartyRosterText" Text="" FontSize="12" Foreground="{ThemeResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                    </Border>
+                    <CheckBox x:Name="TwoPersonAiToggle" Content="Enable AI in Two-Person Private Mode" Visibility="Collapsed"
+                              Checked="TwoPersonAiToggle_Changed" Unchecked="TwoPersonAiToggle_Changed"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button x:Name="AdvanceTurnBtn" Content="Next Turn &#xE72A;" Click="AdvanceTurn_Click"/>
+                    <Button x:Name="TriggerNarratorBtn" Content="Narrator Phase" Click="TriggerNarrator_Click"/>
+                    <Button x:Name="RequestAiReplyBtn" Content="Trigger AI Response" Click="RequestAiReply_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Row 2 Col 0: Main Transcript & Action Composer -->
+        <Grid Grid.Row="2" Grid.Column="0" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Transcript ScrollViewer -->
+            <Border Grid.Row="0" Style="{StaticResource FluentSurfaceCardStyle}" Padding="12">
+                <ScrollViewer x:Name="TranscriptScroll" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="MessagesListPanel" Spacing="10" Padding="4"/>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Composer Bar -->
+            <Border Grid.Row="1" Style="{StaticResource FluentSurfaceCardStyle}" Padding="12,10">
+                <StackPanel Spacing="8">
+                    <!-- Quick Action Chips & Quick Tabletop Dice -->
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button Content="🎲 Roll d20" Padding="8,3" FontSize="11" Click="QuickRollD20_Click"/>
+                        <Button Content="💬 Speak" Padding="8,3" FontSize="11" Click="QuickActionChip_Click" Tag="Speak"/>
+                        <Button Content="⚔️ Act" Padding="8,3" FontSize="11" Click="QuickActionChip_Click" Tag="Act"/>
+                        <Button Content="💭 Think" Padding="8,3" FontSize="11" Click="QuickActionChip_Click" Tag="Think"/>
+                        <Button Content="📜 Narrate" Padding="8,3" FontSize="11" Click="QuickActionChip_Click" Tag="Narrate"/>
+                        <Button Content="🔍 Inspect" Padding="8,3" FontSize="11" Click="QuickActionChip_Click" Tag="Inspect"/>
+                    </StackPanel>
+
+                    <!-- Primary Message Input & Send Button on Top -->
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="120"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="MessageInputBox" Grid.Column="0" AcceptsReturn="True" TextWrapping="Wrap"
+                                 MinHeight="56" MaxHeight="110"
+                                 PlaceholderText="Type your dialogue in &quot;quotes&quot; or actions in *asterisks* here, then click Send..."/>
+
+                        <Button x:Name="SendActionBtn" Grid.Column="1" Content="Send Action" Style="{StaticResource AccentButtonStyle}"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontWeight="SemiBold" Click="SendAction_Click"/>
+                    </Grid>
+
+                    <!-- Secondary Action Type, Whisper & Stream Controls -->
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="160"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ComboBox x:Name="ActionTypeCombo" Grid.Column="0" HorizontalAlignment="Stretch" ToolTipService.ToolTip="Action Type">
+                            <ComboBoxItem Content="Speak / Emote" Tag="Speak" IsSelected="True"/>
+                            <ComboBoxItem Content="Move Location" Tag="Move"/>
+                            <ComboBoxItem Content="Interact" Tag="Interact"/>
+                            <ComboBoxItem Content="Inspect Scene" Tag="Inspect"/>
+                            <ComboBoxItem Content="Use Item" Tag="UseItem"/>
+                            <ComboBoxItem Content="Scene Narration" Tag="Narrate"/>
+                            <ComboBoxItem Content="Custom Action" Tag="Custom"/>
+                        </ComboBox>
+
+                        <CheckBox x:Name="PrivateWhisperCheck" Grid.Column="1" Content="Whisper" VerticalAlignment="Center"
+                                  Checked="PrivateWhisperCheck_Changed" Unchecked="PrivateWhisperCheck_Changed"/>
+
+                        <ComboBox x:Name="WhisperTargetCombo" Grid.Column="2" HorizontalAlignment="Stretch"
+                                  PlaceholderText="Whisper Target" IsEnabled="False"/>
+
+                        <TextBlock x:Name="StreamingStatusText" Grid.Column="3" Text="Ready" VerticalAlignment="Center"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12"/>
+
+                        <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <DropDownButton Content="🎲 Roll Dice" ToolTipService.ToolTip="Roll Tabletop Die (d4, d6, d8, d10, d12, d20, d100)">
+                                <DropDownButton.Flyout>
+                                    <MenuFlyout Placement="Top">
+                                        <MenuFlyoutItem Text="d4 (Four-Sided Die)" Tag="4" Click="RollDiceItem_Click"/>
+                                        <MenuFlyoutItem Text="d6 (Standard Six-Sided)" Tag="6" Click="RollDiceItem_Click"/>
+                                        <MenuFlyoutItem Text="d8 (Eight-Sided Die)" Tag="8" Click="RollDiceItem_Click"/>
+                                        <MenuFlyoutItem Text="d10 (Ten-Sided Die)" Tag="10" Click="RollDiceItem_Click"/>
+                                        <MenuFlyoutItem Text="d12 (Twelve-Sided Die)" Tag="12" Click="RollDiceItem_Click"/>
+                                        <MenuFlyoutItem Text="d20 (Critical Check / D&amp;D)" Tag="20" Click="RollDiceItem_Click"/>
+                                        <MenuFlyoutItem Text="d100 (Percentile Die)" Tag="100" Click="RollDiceItem_Click"/>
+                                    </MenuFlyout>
+                                </DropDownButton.Flyout>
+                            </DropDownButton>
+                            <Button x:Name="StopStreamBtn" Content="Stop" Click="StopStream_Click" IsEnabled="False"/>
+                            <Button x:Name="RegenerateBtn" Content="Regenerate" Click="Regenerate_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Row 2 Col 1: Right Side Inspector (Tabs: Party, Story Tree, World State, Archive) -->
+        <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource FluentSurfaceCardStyle}" Padding="12">
+            <Grid RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Modern Segmented Navigation Bar -->
+                <Grid Grid.Row="0" ColumnSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="TabBtnParty" Grid.Column="0" Content="👥 Party" Padding="2,5" FontSize="11" HorizontalAlignment="Stretch" Click="InspectorTab_Click" Tag="Party"/>
+                    <Button x:Name="TabBtnBranches" Grid.Column="1" Content="🌿 Story" Padding="2,5" FontSize="11" HorizontalAlignment="Stretch" Click="InspectorTab_Click" Tag="Branches"/>
+                    <Button x:Name="TabBtnWorld" Grid.Column="2" Content="🌐 World" Padding="2,5" FontSize="11" HorizontalAlignment="Stretch" Click="InspectorTab_Click" Tag="World"/>
+                    <Button x:Name="TabBtnArchive" Grid.Column="3" Content="📜 Archive" Padding="2,5" FontSize="11" HorizontalAlignment="Stretch" Click="InspectorTab_Click" Tag="Archive"/>
+                </Grid>
+
+                <!-- Tab 1: Party & Cast Panel -->
+                <ScrollViewer x:Name="PanelParty" Grid.Row="1" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Session Participants &amp; Turn Order" Style="{StaticResource SectionTitleTextStyle}"/>
+                        <StackPanel x:Name="ParticipantsPanel" Spacing="6"/>
+
+                        <Border Background="{ThemeResource ControlFillColorSecondaryBrush}" CornerRadius="6" Padding="10" Margin="0,8,0,0">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="💡 Multiplayer Coordination" FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="Connected players and AI cast take turns based on the active game mode rules."
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Tab 2: Narrative Branches & Checkpoints Panel -->
+                <ScrollViewer x:Name="PanelBranches" Grid.Row="1" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Narrative Branches &amp; Checkpoints" Style="{StaticResource SectionTitleTextStyle}"/>
+                        <TextBlock Text="Save branching points to fork alternate story paths, reload past narrative states, or rewind critical decisions."
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+
+                        <Grid ColumnSpacing="6" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="NewBranchTitleBox" Grid.Column="0" PlaceholderText="Branch / Checkpoint Name..."/>
+                            <Button Grid.Column="1" Content="Save Fork" Click="SaveBranchFork_Click"/>
+                        </Grid>
+
+                        <ListView x:Name="BranchCheckpointsListView" MaxHeight="240" SelectionMode="None"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Tab 3: World State & Continuity Panel -->
+                <ScrollViewer x:Name="PanelWorld" Grid.Row="1" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Scene Location &amp; Memory" Style="{StaticResource SectionTitleTextStyle}"/>
+
+                        <!-- Active Location -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Current Location" Style="{StaticResource CaptionSecondaryTextStyle}"/>
+                            <Grid ColumnSpacing="6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="LocationBox" Grid.Column="0" PlaceholderText="Current scene location"/>
+                                <Button Grid.Column="1" Content="Set" Click="UpdateLocation_Click"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Structured World State Variables -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Structured World Variables" Style="{StaticResource CaptionSecondaryTextStyle}"/>
+                            <StackPanel x:Name="WorldStateVariablesPanel" Spacing="4"/>
+                            <Grid ColumnSpacing="6" Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="NewStateKeyBox" Grid.Column="0" PlaceholderText="Key"/>
+                                <TextBox x:Name="NewStateValBox" Grid.Column="1" PlaceholderText="Value"/>
+                                <Button Grid.Column="2" Content="+" Click="AddWorldStateVar_Click"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Author's Note & Continuity -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Author's Note &amp; Style" Style="{StaticResource CaptionSecondaryTextStyle}"/>
+                            <TextBox x:Name="AuthorsNoteBox" AcceptsReturn="True" TextWrapping="Wrap" Height="60"
+                                     PlaceholderText="Subtle narrative direction injected into prompt..."
+                                     TextChanged="AuthorsNoteBox_TextChanged"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Running Story Summary" Style="{StaticResource CaptionSecondaryTextStyle}"/>
+                            <TextBox x:Name="RunningSummaryBox" AcceptsReturn="True" TextWrapping="Wrap" Height="60"
+                                     PlaceholderText="Summary of earlier events..."
+                                     TextChanged="RunningSummaryBox_TextChanged"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Tab 4: History & Archives Panel -->
+                <ScrollViewer x:Name="PanelArchive" Grid.Row="1" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Session Archives &amp; Metrics" Style="{StaticResource SectionTitleTextStyle}"/>
+                        <Border Background="{ThemeResource ControlFillColorSecondaryBrush}" CornerRadius="6" Padding="10">
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Name="ArchiveStatsText" Text="Loading statistics..." FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Authoritative history tracked in SQLite local database." FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+                        <TextBox x:Name="SearchHistoryBox" PlaceholderText="Search messages in this story..." TextChanged="SearchHistoryBox_TextChanged"/>
+                        <ListView x:Name="SearchResultsListView" MaxHeight="240" SelectionMode="None"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

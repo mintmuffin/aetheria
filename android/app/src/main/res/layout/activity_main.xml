@@ -1,0 +1,1042 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/md_background">
+
+    <!-- Top App Bar -->
+    <LinearLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:background="@color/md_surface"
+        android:elevation="4dp">
+
+        <TextView
+            android:id="@+id/tv_avatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="D"
+            android:textColor="@color/md_onPrimaryContainer"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="@drawable/avatar_circle_bg" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_top_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Denji"
+                android:textColor="@color/md_onSurface"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:singleLine="true" />
+
+            <TextView
+                android:id="@+id/tv_top_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chainsaw Man: Tokyo Incursions"
+                android:textColor="@color/md_onSurfaceVariant"
+                android:textSize="12sp"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_mode_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:text="Solo AI"
+            android:textColor="@color/md_primary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:background="@drawable/chip_pill_bg" />
+
+        <TextView
+            android:id="@+id/btn_quick_dice"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="8dp"
+            android:gravity="center"
+            android:text="🎲"
+            android:textSize="18sp"
+            android:background="@drawable/chip_pill_bg" />
+    </LinearLayout>
+
+    <!-- Main Content Container with Tabs -->
+    <FrameLayout
+        android:id="@+id/content_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- ================= PAGE 1: ROLEPLAY CHAT ================= -->
+        <LinearLayout
+            android:id="@+id/page_roleplay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <!-- Message List -->
+            <ListView
+                android:id="@+id/lv_messages"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:divider="@null"
+                android:dividerHeight="8dp"
+                android:paddingHorizontal="12dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:transcriptMode="alwaysScroll"
+                android:stackFromBottom="true" />
+
+            <!-- Streaming / Typing Status Bar -->
+            <TextView
+                android:id="@+id/tv_typing_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="4dp"
+                android:text="AI is typing..."
+                android:textColor="@color/accent_cyan"
+                android:textSize="12sp"
+                android:visibility="gone"
+                android:background="@color/md_surfaceVariant" />
+
+            <!-- Horizontal Action Chips -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:background="@color/md_surface">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chip_inspect"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:text="🔍 Inspect"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="12sp"
+                        android:background="@drawable/chip_pill_bg" />
+
+                    <TextView
+                        android:id="@+id/chip_whisper"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:text="💬 Whisper"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="12sp"
+                        android:background="@drawable/chip_pill_bg" />
+
+                    <TextView
+                        android:id="@+id/chip_action"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:text="⚡ Action"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="12sp"
+                        android:background="@drawable/chip_pill_bg" />
+
+                    <TextView
+                        android:id="@+id/chip_attack"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:text="⚔ Attack"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="12sp"
+                        android:background="@drawable/chip_pill_bg" />
+
+                    <TextView
+                        android:id="@+id/chip_d20"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:text="🎲 d20"
+                        android:textColor="@color/accent_dice"
+                        android:textSize="12sp"
+                        android:background="@drawable/chip_pill_bg" />
+
+                    <TextView
+                        android:id="@+id/chip_clear"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:text="🗑 Clear Chat"
+                        android:textColor="@color/accent_red"
+                        android:textSize="12sp"
+                        android:background="@drawable/chip_pill_bg" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- Bottom Message Input Bar -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:background="@color/md_surface">
+
+                <TextView
+                    android:id="@+id/btn_input_dice"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:gravity="center"
+                    android:text="🎲"
+                    android:textSize="18sp"
+                    android:background="@drawable/chip_pill_bg" />
+
+                <EditText
+                    android:id="@+id/et_message_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:minHeight="44dp"
+                    android:maxLines="4"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="10dp"
+                    android:hint="Type your roleplay response or *action*..."
+                    android:textColorHint="@color/md_outline"
+                    android:textColor="@color/md_onSurface"
+                    android:textSize="14sp"
+                    android:background="@drawable/input_bar_bg" />
+
+                <Button
+                    android:id="@+id/btn_send"
+                    android:layout_width="54dp"
+                    android:layout_height="40dp"
+                    android:text="➤"
+                    android:textColor="@color/md_onPrimary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/button_primary_bg" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ================= PAGE 2: CHARACTERS ================= -->
+        <LinearLayout
+            android:id="@+id/page_characters"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Character Roster"
+                    android:textColor="@color/md_onSurface"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_new_character"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="+ Create"
+                    android:textColor="@color/md_onPrimary"
+                    android:textSize="12sp"
+                    android:background="@drawable/button_primary_bg" />
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/lv_characters"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@null"
+                android:dividerHeight="12dp" />
+        </LinearLayout>
+
+        <!-- ================= PAGE 3: WORLDS ================= -->
+        <LinearLayout
+            android:id="@+id/page_worlds"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:text="Worlds &amp; Lorebooks"
+                android:textColor="@color/md_onSurface"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ListView
+                android:id="@+id/lv_worlds"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@null"
+                android:dividerHeight="12dp" />
+        </LinearLayout>
+
+        <!-- ================= PAGE 4: PERSONAS ================= -->
+        <LinearLayout
+            android:id="@+id/page_personas"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Player Personas"
+                    android:textColor="@color/md_onSurface"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_new_persona"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="+ New Persona"
+                    android:textColor="@color/md_onPrimary"
+                    android:textSize="12sp"
+                    android:background="@drawable/button_primary_bg" />
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/lv_personas"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@null"
+                android:dividerHeight="12dp" />
+        </LinearLayout>
+
+        <!-- ================= PAGE 5: MULTIPLAYER CO-OP ================= -->
+        <ScrollView
+            android:id="@+id/page_multiplayer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Co-Op Multiplayer (PC Sync)"
+                    android:textColor="@color/md_onSurface"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="Connect to sessions hosted on your PC over LAN or Virtual Network"
+                    android:textColor="@color/md_onSurfaceVariant"
+                    android:textSize="13sp" />
+
+                <!-- Status Card -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:background="@drawable/card_rounded_bg"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tv_coop_status_dot"
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/avatar_circle_bg" />
+
+                        <TextView
+                            android:id="@+id/tv_coop_status_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Disconnected (Solo Mode)"
+                            android:textColor="@color/md_onSurface"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_coop_details"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="In Solo Mode, characters respond using your in-app AI engine."
+                        android:textColor="@color/md_onSurfaceVariant"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- ACTIVE PARTY LOBBY (When connected to PC) -->
+                <LinearLayout
+                    android:id="@+id/ll_coop_lobby_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:background="@drawable/card_rounded_bg"
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🎮 PARTY LOBBY"
+                            android:textColor="@color/md_primary"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
+                            android:background="@drawable/badge_bg" />
+
+                        <TextView
+                            android:id="@+id/tv_lobby_room_title"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="Party Room"
+                            android:textColor="@color/md_onSurface"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:singleLine="true" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_lobby_meta"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="12dp"
+                        android:text="Mode: Freeform • World: Default"
+                        android:textColor="@color/md_onSurfaceVariant"
+                        android:textSize="12sp" />
+
+                    <!-- Pre-Game Character / Role Picker Card -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp"
+                        android:background="@drawable/chip_pill_bg"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🎭 Your Roleplay Character"
+                            android:textColor="@color/md_onSurface"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_lobby_selected_role"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Playing as: Reze"
+                            android:textColor="@color/accent_cyan"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_lobby_char_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="8dp"
+                            android:text="Tap 'Change Character' to pick a different persona or hero."
+                            android:textColor="@color/md_onSurfaceVariant"
+                            android:textSize="11sp"
+                            android:maxLines="2" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/btn_lobby_change_character"
+                                android:layout_width="0dp"
+                                android:layout_height="38dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="4dp"
+                                android:text="🎭 Change Role"
+                                android:textColor="@color/md_onSurface"
+                                android:textSize="12sp"
+                                android:background="@drawable/card_rounded_bg" />
+
+                            <Button
+                                android:id="@+id/btn_lobby_ready"
+                                android:layout_width="0dp"
+                                android:layout_height="38dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="4dp"
+                                android:text="⌛ Not Ready"
+                                android:textColor="@color/md_onSurface"
+                                android:textSize="12sp"
+                                android:background="@drawable/card_rounded_bg" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Party Roster -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="👥 Connected Party Members"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp" />
+
+                    <LinearLayout
+                        android:id="@+id/ll_lobby_party_members"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Enter Roleplay Button -->
+                    <Button
+                        android:id="@+id/btn_lobby_enter_roleplay"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="🚀 Enter Roleplay Workspace"
+                        android:textColor="@color/md_onPrimary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/button_primary_bg" />
+                </LinearLayout>
+
+                <!-- Connection Form -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:background="@drawable/card_rounded_bg">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Host Computer IP Address"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/et_coop_host"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="12dp"
+                        android:paddingHorizontal="12dp"
+                        android:hint="e.g. 192.168.1.100 or 10.0.2.2"
+                        android:textColor="@color/md_onSurface"
+                        android:textColorHint="@color/md_outline"
+                        android:textSize="14sp"
+                        android:background="@drawable/input_bar_bg" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="TCP Port (Default: 7777)"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/et_coop_port"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="12dp"
+                        android:paddingHorizontal="12dp"
+                        android:text="7777"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="14sp"
+                        android:background="@drawable/input_bar_bg" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Invite Token"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/et_coop_token"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="16dp"
+                        android:paddingHorizontal="12dp"
+                        android:hint="Paste 12-char invite token"
+                        android:textColor="@color/md_onSurface"
+                        android:textColorHint="@color/md_outline"
+                        android:textSize="14sp"
+                        android:background="@drawable/input_bar_bg" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btn_coop_scan"
+                            android:layout_width="0dp"
+                            android:layout_height="42dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="6dp"
+                            android:text="📡 Scan LAN"
+                            android:textColor="@color/md_onSurface"
+                            android:textSize="13sp"
+                            android:background="@drawable/chip_pill_bg" />
+
+                        <Button
+                            android:id="@+id/btn_coop_connect"
+                            android:layout_width="0dp"
+                            android:layout_height="42dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="6dp"
+                            android:text="Connect"
+                            android:textColor="@color/md_onPrimary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:background="@drawable/button_primary_bg" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- ================= PAGE 6: AI SETTINGS ================= -->
+        <ScrollView
+            android:id="@+id/page_settings"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI Models &amp; Engine (On The Go)"
+                    android:textColor="@color/md_onSurface"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="Configure OpenAI-compatible endpoints: KoboldCpp, Ollama, OpenRouter, Groq, DeepSeek, or Cloud APIs"
+                    android:textColor="@color/md_onSurfaceVariant"
+                    android:textSize="13sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:background="@drawable/card_rounded_bg">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="API Endpoint URL"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/et_ai_endpoint"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="12dp"
+                        android:paddingHorizontal="12dp"
+                        android:text="https://openrouter.ai/api/v1"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="13sp"
+                        android:background="@drawable/input_bar_bg" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="API Key (Leave empty for local KoboldCpp/Ollama)"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/et_ai_key"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="12dp"
+                        android:paddingHorizontal="12dp"
+                        android:hint="sk-or-v1-... (optional)"
+                        android:inputType="textPassword"
+                        android:textColor="@color/md_onSurface"
+                        android:textColorHint="@color/md_outline"
+                        android:textSize="13sp"
+                        android:background="@drawable/input_bar_bg" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Model Identifier"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/et_ai_model"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="12dp"
+                        android:paddingHorizontal="12dp"
+                        android:text="sao10k/l3-8b-stheno-v3.2"
+                        android:textColor="@color/md_onSurface"
+                        android:textSize="13sp"
+                        android:background="@drawable/input_bar_bg" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="6dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Temperature"
+                                android:textColor="@color/md_onSurface"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <EditText
+                                android:id="@+id/et_ai_temperature"
+                                android:layout_width="match_parent"
+                                android:layout_height="44dp"
+                                android:layout_marginTop="4dp"
+                                android:paddingHorizontal="12dp"
+                                android:text="0.82"
+                                android:textColor="@color/md_onSurface"
+                                android:textSize="13sp"
+                                android:background="@drawable/input_bar_bg" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="6dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Max Tokens"
+                                android:textColor="@color/md_onSurface"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <EditText
+                                android:id="@+id/et_ai_max_tokens"
+                                android:layout_width="match_parent"
+                                android:layout_height="44dp"
+                                android:layout_marginTop="4dp"
+                                android:paddingHorizontal="12dp"
+                                android:text="700"
+                                android:textColor="@color/md_onSurface"
+                                android:textSize="13sp"
+                                android:background="@drawable/input_bar_bg" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btn_ai_test"
+                            android:layout_width="0dp"
+                            android:layout_height="42dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="6dp"
+                            android:text="⚡ Test Connection"
+                            android:textColor="@color/md_onSurface"
+                            android:textSize="12sp"
+                            android:background="@drawable/chip_pill_bg" />
+
+                        <Button
+                            android:id="@+id/btn_ai_save"
+                            android:layout_width="0dp"
+                            android:layout_height="42dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="6dp"
+                            android:text="Save Settings"
+                            android:textColor="@color/md_onPrimary"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:background="@drawable/button_primary_bg" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_ai_test_result"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:textColor="@color/accent_cyan"
+                        android:textSize="12sp"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </FrameLayout>
+
+    <!-- Material 3 Bottom Navigation Bar -->
+    <LinearLayout
+        android:id="@+id/bottom_nav_bar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@color/md_surface"
+        android:elevation="8dp">
+
+        <LinearLayout
+            android:id="@+id/nav_tab_roleplay"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💬"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_nav_roleplay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chat"
+                android:textColor="@color/md_primary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_tab_characters"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👥"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_nav_characters"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chars"
+                android:textColor="@color/md_onSurfaceVariant"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_tab_worlds"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🌍"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_nav_worlds"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Worlds"
+                android:textColor="@color/md_onSurfaceVariant"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_tab_personas"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎭"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_nav_personas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Persona"
+                android:textColor="@color/md_onSurfaceVariant"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_tab_multiplayer"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🤝"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_nav_multiplayer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Co-Op"
+                android:textColor="@color/md_onSurfaceVariant"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_tab_settings"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚙"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_nav_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Settings"
+                android:textColor="@color/md_onSurfaceVariant"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

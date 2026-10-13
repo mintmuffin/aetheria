@@ -1,0 +1,101 @@
+<Page
+    x:Class="Aetheria.App.Pages.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,28">
+        <StackPanel Spacing="24">
+            <!-- Header & Quick Launch Bar -->
+            <Border Style="{StaticResource FluentSurfaceCardStyle}" Padding="24">
+                <Grid ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Welcome to Aetheria" Style="{StaticResource PageHeaderTextStyle}"/>
+                        <TextBlock x:Name="ActiveSummaryText"
+                                   Text="Single-player and multiplayer AI roleplay platform for Windows 11."
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
+                            <Button Content="Resume Active Session" Style="{StaticResource AccentButtonStyle}" Click="ResumeSession_Click"/>
+                            <Button Content="Restore Couple &amp; Co-Op Scenarios" Click="RestoreScenarios_Click"/>
+                            <Button Content="+ Couple Roleplay (2P)" Click="NewTwoPerson_Click"/>
+                            <Button Content="+ Co-Op PvE Session" Click="NewFreeform_Click"/>
+                            <Button Content="Host / Join Multiplayer" Click="OpenMultiplayer_Click"/>
+                            <Button Content="AI Models &amp; Keys" Click="OpenModels_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Metrics Row -->
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource FluentSurfaceCardStyle}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Active Persona" Style="{StaticResource CaptionSecondaryTextStyle}"/>
+                        <TextBlock x:Name="MetricPersonaText" Text="Denji" FontSize="18" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource FluentSurfaceCardStyle}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Default AI Model" Style="{StaticResource CaptionSecondaryTextStyle}"/>
+                        <TextBlock x:Name="MetricModelText" Text="KoboldCpp Local 8B" FontSize="18" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource FluentSurfaceCardStyle}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Characters &amp; Worlds" Style="{StaticResource CaptionSecondaryTextStyle}"/>
+                        <TextBlock x:Name="MetricCountsText" Text="13 Characters • 2 Worlds" FontSize="18" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="3" Style="{StaticResource FluentSurfaceCardStyle}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Multiplayer Status" Style="{StaticResource CaptionSecondaryTextStyle}"/>
+                        <TextBlock x:Name="MetricNetworkText" Text="Offline (Local Ready)" FontSize="18" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Two-Column Main Area: Recent Sessions & Featured Characters -->
+            <Grid ColumnSpacing="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Recent Sessions -->
+                <Border Grid.Column="0" Style="{StaticResource FluentSurfaceCardStyle}">
+                    <StackPanel Spacing="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Couple Roleplay &amp; Co-Op PvE Scenarios" Style="{StaticResource SectionTitleTextStyle}" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Content="Reset / Restore All 8 Scenarios" Click="RestoreScenarios_Click"/>
+                        </Grid>
+                        <StackPanel x:Name="RecentSessionsContainer" Spacing="8"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Right: Characters Quick Launch -->
+                <Border Grid.Column="1" Style="{StaticResource FluentSurfaceCardStyle}">
+                    <StackPanel Spacing="12">
+                        <Grid>
+                            <TextBlock Text="Characters &amp; Scenarios" Style="{StaticResource SectionTitleTextStyle}"/>
+                        </Grid>
+                        <StackPanel x:Name="CharactersQuickContainer" Spacing="8"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

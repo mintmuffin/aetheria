@@ -1,0 +1,64 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# KoboldCpp & Model binaries (Large binary weights)
+koboldcpp/models/*.gguf
+koboldcpp/models/*.bin
+koboldcpp/models/*.safetensors
+koboldcpp/models/*.ggml
+koboldcpp/*.exe
+*.exe
+!src/**/*.exe
+*.gguf
+
+# Packaging temporary staging & outputs
+packaging/msix-staging/
+dist/
+
+# Android build outputs & temporary folders
+android/build/
+android/.gradle/
+android/app/build/
+android/app/*.apk
+android/app/*.aab
+AetheriaApkBuild/
+
+# Certificates and keys
+*.pfx
+*.cer
+*.key
+*.keystore
+*.jks
+
+# Logs and temp
+*.log
+*.tmp
+thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Local Private Guides & Tutorials
+TUTORIAL_1_HOST_AND_KOBOLDCPP_GUIDE.md
+TUTORIAL_2_GIRLFRIEND_INSTALLATION_AND_COUPLE_COOP_GUIDE.md
+HARDWARE_GUIDE.md
+

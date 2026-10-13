@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="4dp">
+
+    <!-- Sender Header -->
+    <LinearLayout
+        android:id="@+id/ll_sender_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="3dp">
+
+        <TextView
+            android:id="@+id/tv_msg_avatar"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:gravity="center"
+            android:text="D"
+            android:textColor="@color/md_onPrimaryContainer"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:background="@drawable/avatar_circle_bg" />
+
+        <TextView
+            android:id="@+id/tv_msg_sender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="Denji"
+            android:textColor="@color/md_onSurfaceVariant"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_msg_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="14:00"
+            android:textColor="@color/md_outline"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- Message Bubble -->
+    <LinearLayout
+        android:id="@+id/ll_bubble_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="320dp"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="10dp"
+        android:background="@drawable/bubble_char_bg">
+
+        <TextView
+            android:id="@+id/tv_msg_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Message body goes here..."
+            android:textColor="@color/bubble_char_text"
+            android:textSize="14sp"
+            android:lineSpacingExtra="3dp" />
+    </LinearLayout>
+
+</LinearLayout>

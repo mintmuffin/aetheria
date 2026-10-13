@@ -1,0 +1,91 @@
+<Page
+    x:Class="Aetheria.App.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,16">
+        <StackPanel Spacing="16">
+            <!-- Appearance & Windows 11 Fluent Integration -->
+            <Border Style="{StaticResource CardPanelStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Appearance &amp; Windows 11 Fluent Shell" Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="260" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="4" VerticalAlignment="Center">
+                            <TextBlock Text="Application Theme (Mica Backdrop)" FontWeight="SemiBold" />
+                            <TextBlock Text="Switch between Dark (Default), Light, or Windows System theme immediately across all workspaces."
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" x:Name="ThemeCombo" HorizontalAlignment="Stretch" SelectionChanged="ThemeCombo_SelectionChanged">
+                            <ComboBoxItem Content="Dark Theme (Default)" Tag="Dark" />
+                            <ComboBoxItem Content="Light Theme" Tag="Light" />
+                            <ComboBoxItem Content="Use Windows System Setting" Tag="Default" />
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Hardware Tuning Advisor (Xeon E5-2690 v3 + RX 580 8GB) -->
+            <Border Style="{StaticResource CardPanelStyle}">
+                <StackPanel Spacing="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Hardware Optimization Profile: Xeon E5-2690 v3 (12C/24T) + AMD RX 580 8GB + 16GB RAM"
+                                   Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+                        <Button Grid.Column="1" Content="Copy KoboldCpp Vulkan Command" Click="CopyVulkanCmd_Click" />
+                    </Grid>
+                    <TextBlock Text="• AMD Radeon RX 580 8GB (GCN 4.0 Polaris): Native ROCm is dropped on newer drivers, so Vulkan backend is fastest. Use 7B–9B parameter models in Q4_K_M or Q5_K_M quantization (~4.8–5.8 GB VRAM) to fit 100% of layers in 8GB VRAM alongside a 4096-token KV cache."
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                    <TextBlock Text="• Intel Xeon E5-2690 v3 (12 Cores / 24 Threads, AVX2): For larger 12B–14B models (e.g., Mistral-Nemo-12B-Q4_K_M), offload 26/40 layers to RX 580 Vulkan and run remaining layers across 10 physical Xeon AVX2 threads (--threads 10 --blasthreads 10)."
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <!-- Storage, SQLite Persistence & Security -->
+            <Border Style="{StaticResource CardPanelStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Local Storage, SQLite WAL Persistence &amp; Credential Security" Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="Local AppData Storage Directory" FontWeight="SemiBold" />
+                            <TextBlock x:Name="DataDirPathText" Text="%LOCALAPPDATA%\Aetheria" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" IsTextSelectionEnabled="True" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Open AppData Folder" Click="OpenDataFolder_Click" />
+                        <Button Grid.Column="2" Content="Backup SQLite Database..." Style="{StaticResource AccentButtonStyle}" Click="BackupDatabase_Click" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Live Diagnostic Logs -->
+            <Border Style="{StaticResource CardPanelStyle}">
+                <StackPanel Spacing="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Platform Diagnostic Logs" Style="{StaticResource SectionHeaderTextStyle}" Margin="0" />
+                        <Button Grid.Column="1" Content="Refresh Logs" Margin="0,0,8,0" Click="RefreshLogs_Click" />
+                        <Button Grid.Column="2" Content="Copy Logs" Click="CopyLogs_Click" />
+                    </Grid>
+                    <ListView x:Name="LogsListView" MaxHeight="220" SelectionMode="None" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

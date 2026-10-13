@@ -1,0 +1,185 @@
+<Page
+    x:Class="Aetheria.App.Pages.CharactersPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="20,16,20,20" ColumnSpacing="18">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Pane: Character Roster, Search, Import -->
+        <Border Grid.Column="0" Style="{StaticResource FluentSurfaceCardStyle}" Padding="14">
+            <Grid RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Character Roster" Style="{StaticResource SectionTitleTextStyle}"/>
+
+                <TextBox x:Name="SearchBox" Grid.Row="1" PlaceholderText="Search name, category, or tag..."
+                         TextChanged="SearchBox_TextChanged"/>
+
+                <ListView x:Name="CharactersList" Grid.Row="2" SelectionChanged="CharactersList_SelectionChanged"/>
+
+                <StackPanel Grid.Row="3" Spacing="6">
+                    <Grid ColumnSpacing="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="+ New" HorizontalAlignment="Stretch" Style="{StaticResource AccentButtonStyle}" Click="NewCharacter_Click"/>
+                        <Button Grid.Column="1" Content="Duplicate" HorizontalAlignment="Stretch" Click="DuplicateCharacter_Click"/>
+                    </Grid>
+                    <Grid ColumnSpacing="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="Import .rpchar" HorizontalAlignment="Stretch" Click="ImportCharacter_Click"/>
+                        <Button Grid.Column="1" Content="Export .rpchar" HorizontalAlignment="Stretch" Click="ExportCharacter_Click"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Right Pane: Organized Character Studio Editor -->
+        <Border Grid.Column="1" Style="{StaticResource FluentSurfaceCardStyle}" Padding="20,16">
+            <Grid RowSpacing="14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Top Header Bar -->
+                <Grid Grid.Row="0" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock x:Name="EditorHeaderTitle" Text="Edit Character" Style="{StaticResource PageHeaderTextStyle}"/>
+                        <TextBlock x:Name="EditorVersionSubtitle" Text="Schema v1.0 • Character Studio" Style="{StaticResource CaptionSecondaryTextStyle}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Content="Play as Character (Set Persona)" Click="PlayAsCharacter_Click"/>
+                        <Button Content="Test Character (Preview)" Click="TestCharacter_Click"/>
+                        <Button Content="Start Roleplay Session" Click="StartWithCharacter_Click"/>
+                        <Button Content="Save Character" Style="{StaticResource AccentButtonStyle}" Click="SaveCharacter_Click"/>
+                        <Button Content="Delete" Click="DeleteCharacter_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Organized Scrollable Sections -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                    <StackPanel Spacing="18">
+                        <!-- Section 1: Identity & Classification -->
+                        <TextBlock Text="1. Identity, Classification &amp; Portrait" Style="{StaticResource SectionTitleTextStyle}"/>
+                        <Grid ColumnSpacing="12" RowSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="NameBox" Grid.Column="0" Header="Character Name *"/>
+                            <TextBox x:Name="TitleBox" Grid.Column="1" Header="Title / Epithet"/>
+                            <TextBox x:Name="CategoryBox" Grid.Column="2" Header="Category"/>
+                            <TextBox x:Name="VersionBox" Grid.Column="3" Header="Version"/>
+                        </Grid>
+
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TagsBox" Grid.Column="0" Header="Tags (comma-separated)" PlaceholderText="Fantasy, Rogue, Co-op"/>
+                            <TextBox x:Name="PortraitPathBox" Grid.Column="1" Header="Portrait Image Path"/>
+                            <Button Grid.Column="2" Content="Browse Portrait..." VerticalAlignment="Bottom" Click="PickPortrait_Click"/>
+                        </Grid>
+
+                        <!-- Section 2: Description, Appearance, Personality & Background -->
+                        <TextBlock Text="2. Description, Appearance, Personality &amp; Background" Style="{StaticResource SectionTitleTextStyle}"/>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="DescriptionBox" Grid.Column="0" Header="Core Description" AcceptsReturn="True" TextWrapping="Wrap" Height="84"/>
+                            <TextBox x:Name="AppearanceBox" Grid.Column="1" Header="Physical Appearance &amp; Attire" AcceptsReturn="True" TextWrapping="Wrap" Height="84"/>
+                        </Grid>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="PersonalityBox" Grid.Column="0" Header="Personality Profile" AcceptsReturn="True" TextWrapping="Wrap" Height="84"/>
+                            <TextBox x:Name="BackgroundBox" Grid.Column="1" Header="Backstory &amp; Lore" AcceptsReturn="True" TextWrapping="Wrap" Height="84"/>
+                        </Grid>
+
+                        <!-- Section 3: Speech, Traits, Motivations, Goals & Relationships -->
+                        <TextBlock Text="3. Speech Style, Behavior, Motivations &amp; Relationships" Style="{StaticResource SectionTitleTextStyle}"/>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="SpeechStyleBox" Grid.Column="0" Header="Speech Style &amp; Cadence" AcceptsReturn="True" TextWrapping="Wrap" Height="72"/>
+                            <TextBox x:Name="BehavioralTraitsBox" Grid.Column="1" Header="Behavioral Traits &amp; Mannerisms" AcceptsReturn="True" TextWrapping="Wrap" Height="72"/>
+                        </Grid>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="MotivationsBox" Grid.Column="0" Header="Motivations" AcceptsReturn="True" TextWrapping="Wrap" Height="72"/>
+                            <TextBox x:Name="GoalsBox" Grid.Column="1" Header="Immediate Goals" AcceptsReturn="True" TextWrapping="Wrap" Height="72"/>
+                            <TextBox x:Name="RelationshipsBox" Grid.Column="2" Header="Relationships (with {{user}} &amp; others)" AcceptsReturn="True" TextWrapping="Wrap" Height="72"/>
+                        </Grid>
+
+                        <!-- Section 4: Greetings, Dialogue Examples & Instructions -->
+                        <TextBlock Text="4. Greetings, Dialogue Examples &amp; Boundaries" Style="{StaticResource SectionTitleTextStyle}"/>
+                        <TextBox x:Name="FirstMessageBox" Header="Opening Greeting (First Message)" AcceptsReturn="True" TextWrapping="Wrap" Height="96"/>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="ExampleDialogueBox" Grid.Column="0" Header="Example Dialogue (&lt;START&gt;, {{user}}, {{char}})" AcceptsReturn="True" TextWrapping="Wrap" Height="96"/>
+                            <TextBox x:Name="AlternateGreetingsBox" Grid.Column="1" Header="Alternate Greetings (one per line / separated by ---)" AcceptsReturn="True" TextWrapping="Wrap" Height="96"/>
+                        </Grid>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="ScenarioInstructionsBox" Grid.Column="0" Header="Scenario-Specific Instructions" AcceptsReturn="True" TextWrapping="Wrap" Height="72"/>
+                            <TextBox x:Name="BoundariesBox" Grid.Column="1" Header="Narrative Boundaries" AcceptsReturn="True" TextWrapping="Wrap" Height="72"/>
+                        </Grid>
+
+                        <!-- Section 5: World State, Inventory & Model Binding -->
+                        <TextBlock Text="5. Starting World State, Inventory &amp; Model Binding" Style="{StaticResource SectionTitleTextStyle}"/>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="StartingLocationBox" Grid.Column="0" Header="Starting Location"/>
+                            <TextBox x:Name="MemoryContinuityBox" Grid.Column="1" Header="Memory &amp; Continuity Mode" PlaceholderText="Standard / High-Recall"/>
+                            <ComboBox x:Name="PreferredModelCombo" Grid.Column="2" Header="Preferred AI Model Preset" HorizontalAlignment="Stretch"/>
+                        </Grid>
+                        <TextBox x:Name="InventoryRawBox" Header="Starting Inventory Items (comma-separated)" PlaceholderText="Brass Cipher, Lockpicks, Healing Draught"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>Aetheria.App</RootNamespace>
+    <AssemblyName>Aetheria</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnableCoreMrtTooling>false</EnableCoreMrtTooling>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Version>1.0.0</Version>
+    <Product>Aetheria Roleplay Platform</Product>
+    <Company>Aetheria Studio</Company>
+    <Description>Native Windows 11 Single-Player and Multiplayer AI Roleplay Platform</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aetheria.Core\Aetheria.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240923002" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
+  </ItemGroup>
+
+  <Target Name="GenerateWinUIPriOnBuild" AfterTargets="Build">
+    <PropertyGroup>
+      <MakePriExe>$(NuGetPackageRoot)microsoft.windows.sdk.buildtools\10.0.22621.3233\bin\10.0.22621.0\x64\makepri.exe</MakePriExe>
+      <TargetOutDir>$([System.IO.Path]::GetFullPath('$(OutDir)'))</TargetOutDir>
+    </PropertyGroup>
+    <Delete Files="$(TargetOutDir)resources.pri" Condition="Exists('$(TargetOutDir)resources.pri')" />
+    <Exec Command="&quot;$(MakePriExe)&quot; new /pr &quot;$(TargetOutDir.TrimEnd('\'))&quot; /cf &quot;$(MSBuildProjectDirectory)\priconfig.xml&quot; /of &quot;$(TargetOutDir)resources.pri&quot; /o" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Target Name="GenerateWinUIPriOnPublish" AfterTargets="Publish">
+    <PropertyGroup>
+      <MakePriExe>$(NuGetPackageRoot)microsoft.windows.sdk.buildtools\10.0.22621.3233\bin\10.0.22621.0\x64\makepri.exe</MakePriExe>
+      <TargetOutDir>$([System.IO.Path]::GetFullPath('$(OutDir)'))</TargetOutDir>
+      <TargetPubDir>$([System.IO.Path]::GetFullPath('$(PublishDir)'))</TargetPubDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <CompiledXbfFiles Include="$(TargetOutDir)**\*.xbf" />
+      <CompiledXamlFiles Include="$(TargetOutDir)**\*.xaml" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CompiledXbfFiles)" DestinationFiles="@(CompiledXbfFiles->'$(TargetPubDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(CompiledXamlFiles)" DestinationFiles="@(CompiledXamlFiles->'$(TargetPubDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
+    <Delete Files="$(TargetPubDir)resources.pri" Condition="Exists('$(TargetPubDir)resources.pri')" />
+    <Exec Command="&quot;$(MakePriExe)&quot; new /pr &quot;$(TargetPubDir.TrimEnd('\'))&quot; /cf &quot;$(MSBuildProjectDirectory)\priconfig.xml&quot; /of &quot;$(TargetPubDir)resources.pri&quot; /o" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+</Project>
